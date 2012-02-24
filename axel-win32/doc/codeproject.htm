@@ -1,0 +1,165 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--------------------------------------------------------------------------->  
+<!--                           INTRODUCTION                                
+
+ The Code Project article submission template (HTML version)
+
+Using this template will help us post your article sooner. To use, just 
+follow the 3 easy steps below:
+ 
+     1. Fill in the article description details
+     2. Add links to your images and downloads
+     3. Include the main article text
+
+That's all there is to it! All formatting will be done by our submission
+scripts and style sheets. 
+
+-->  
+<!--------------------------------------------------------------------------->  
+<!--                        IGNORE THIS SECTION                            -->
+<html>
+<head>
+<title>The Code Project</title>
+<Style>
+BODY, P, TD { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10pt }
+H2,H3,H4,H5 { color: #ff9900; font-weight: bold; }
+H2 { font-size: 13pt; }
+H3 { font-size: 12pt; }
+H4 { font-size: 10pt; color: black; }
+PRE { BACKGROUND-COLOR: #FBEDBB; FONT-FAMILY: "Courier New", Courier, mono; WHITE-SPACE: pre; }
+CODE { COLOR: #990000; FONT-FAMILY: "Courier New", Courier, mono; }
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.codeproject.com/App_Themes/NetCommunity/CodeProject.css">
+</head>
+<body bgcolor="#FFFFFF" color=#000000>
+<!--------------------------------------------------------------------------->  
+
+
+<!-------------------------------     STEP 1      --------------------------->
+<!--  Fill in the details (CodeProject will reformat this section for you) -->
+
+<pre>
+Title:       MultiThread download accelerator console
+Author:      Xiang Zhai
+Email:       xiangzhai83@gmail.com
+Language:    C
+Platform:    Windows
+Technology:  Windows Socket 2.x, Multi-Thread
+Level:       Intermediate
+Description: Porting Axel a lighter download accelerator for Linux and other Unices to NATIVE WIN32
+Section      Internet / Network
+SubSection   Utilities
+License:     GPLv2
+</pre>
+
+<!-------------------------------     STEP 2      --------------------------->
+<!--  Include download and sample image information.                       --> 
+
+<ul class=download>
+<li><a href="src-20120224.zip">Download src-20120224.zip - 44 Kb </a></li>
+</ul>
+
+<!-------------------------------     STEP 3      --------------------------->
+
+<!--  Add the article text. Please use simple formatting (<h2>, <p> etc)   -->
+
+<h2>Introduction</h2>
+
+<p>Axel is a lighter download accelerator for Linux and other Unices. It should compile (and run) on BSD, Solaris, Darwin (Mac OS X) and Win32 (Cygwin) systems.</p>
+<p>Porting to NATIVE WIN32 without Cygwin, what I did in the #if WIN32 ... #endif, for example:
+<li>Changed Linux file descriptor for the new socket to WIN32 SOCKET descriptor referencing the new socket;</li>
+<li>Changed close, write, read to closesocket, send, recv;</li>
+<li>Changed pthread_t for the thread to HANDLE referenced the thread;</li>
+<li>Changed pthread_create, pthread_join, pthread_cancel to CreateThread, WaitForSingleObject, TerminateThread;</li>
+</p>
+
+<h2>Background</h2>
+
+<p>DEBUG Axel to see multi-thread downloading way:
+<li>TCP connect (socket, bind, connect) to host such as http://localhost provided by IIS;</li>
+<li>Send http header request;</li>
+<pre>
+GET / HTTP/1.0
+Host: www.codeproject.com
+Range: bytes=1-
+User-Agent: Axel 2.4 (WIN32)
+</pre>
+<li>Get the content length from header reply;</li>
+<pre>
+HTTP/1.1 206 Partial Content
+Content-Type: text/html
+Last-Modified: Tue, 20 Sep 2011 03:39:05 GMT
+Accept-Ranges: bytes
+ETag: "3c2bb1d84677cc1:0"
+Server: Microsoft-IIS/7.5
+X-Powered-By: ASP.NET
+Date: Fri, 24 Feb 2012 08:41:12 GMT
+Connection: close
+Content-Length: 688 /* Here is what I need */
+Content-Range: bytes 1-688/689
+</pre>
+<li>Divide the content range into threads' number for instance 10;</li>
+<pre>
+Downloading 0-67 using conn. 0
+Downloading 68-136 using conn. 1
+Downloading 137-205 using conn. 2
+Downloading 206-274 using conn. 3
+Downloading 275-343 using conn. 4
+Downloading 344-412 using conn. 5
+Downloading 413-481 using conn. 6
+Downloading 482-550 using conn. 7
+Downloading 551-619 using conn. 8
+Downloading 620-688 using conn. 9
+</pre>
+<li>Send http header request with range [from, to] via one of the threads;</li>
+<pre>
+GET / HTTP/1.0
+Host: localhost
+Range: bytes=206-274
+User-Agent: Axel 2.4 (WIN32)
+</pre>
+Write the buffer from http header's reply to temporary file *.st (Axel style), terminate && close the thread when downloaded the content range. Temporary file is helpful to the server host resuming available.
+</p>
+
+<h2>Using the code</h2>
+
+<p>The source file text.c is the main entry considering as a good example and testcase about how to use Axel API.</p>
+
+<pre>
+conf_t conf;
+conf_init(&conf);
+conf.num_connections = 10;  /* multi-thread numbers */
+/* axel_t object construct */
+axel_t *axel = axel_new(&conf, 0, "http://localhost");
+axel_open(axel);
+axel_start(axel);
+/* Have not downloaded the total content */
+while (!axel->ready) 
+{
+    axel_do(axel);
+    /* printf some verbose about download threads info such as speed and complete percent */
+}
+/* axel_t object destruct */
+axel_close(axel);
+</pre>
+
+<h2>Points of Interest</h2>
+
+<p>Cross platform development - played with Axel console under Gentoo Linux to see the Multi-Thread download accelerator working way, then ported with NATIVE WIN32 API to Windows. I complied the source code with VS2005 under Windows 7 64-bit, so it need more contributors to debug under other Windows distribution.</p>
+
+<h2>Improvement</h2>
+
+<p>There is already poll provided by Linux Kernel to determines the status of one or more file descriptor, waiting if necessary, to perform Asynchronous I/O. And there is WSAPoll supported only by Windows Vista, 7 && Server 2008 to determines status of one or more sockets, what's more, overlapped IO supported by more Windows distribution. So It is better to change the select fd_set (have a look at axel_do API in axel.c __FILE__) to more efficient way.</p>
+<p>Be short of test/QA/DEBUG, for example, I did not test Axel for FTP protocol. And hunting the BUG, when set the max number of connections to 1 such as IIS, Axel WIN32 consider as no connection yet but still waitting...</p>
+
+<h2>History</h2>
+
+<p>2012-02-24 xzhai
+* Ported Axel v2.4 to WIN32 without Cygwin.
+</p>
+
+<!-------------------------------    That's it!   --------------------------->
+</body>
+
+</html>
+
