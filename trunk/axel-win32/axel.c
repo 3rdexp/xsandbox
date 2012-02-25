@@ -301,12 +301,12 @@ void axel_start(axel_t *axel)
 void axel_do(axel_t *axel)
 {
 #if WIN32
-	WSAEVENT hEventObject = WSACreateEvent();
+	fd_set fds;
 #else
 	fd_set fds[1];
+#endif
 	int hifd;
 	struct timeval timeval[1];
-#endif
 	int i;
 	long long int remaining, size;
 
@@ -317,17 +317,32 @@ void axel_do(axel_t *axel)
 		axel->next_state = gettime() + axel->conf->save_state_interval;
 	}
 
-#if !WIN32	
 	/* Wait for data on (one of) the connections */
+#if WIN32
+	FD_ZERO(&fds);
+	hifd = axel->conf->num_connections;
+#else
 	FD_ZERO(fds);
 	hifd = 0;
+#endif
 	for (i = 0; i < axel->conf->num_connections; i++)
 	{
 		if (axel->conn[i].enabled) 
 		{
+#if WIN32
+			FD_SET(axel->conn[i].fd, &fds);
+#else
 			FD_SET(axel->conn[i].fd, fds);
+#endif
 		}
+#if WIN32
+		if (INVALID_SOCKET == axel->conn[i].fd) 
+		{
+			hifd--;
+		}
+#else
 		hifd = max(hifd, axel->conn[i].fd);
+#endif
 	}
 
 	if (0 == hifd)
@@ -345,13 +360,16 @@ void axel_do(axel_t *axel)
 		timeval->tv_usec = 100000;
 		/* A select() error probably means it was interrupted
 		   by a signal, or that something else's very wrong...	*/
-		if (-1 == select(hifd + 1, fds, NULL, NULL, timeval ))
+#if WIN32
+		if (SOCKET_ERROR == select(hifd + 1, &fds, NULL, NULL, timeval))
+#else
+		if (-1 == select(hifd + 1, fds, NULL, NULL, timeval))
+#endif
 		{
 			axel->ready = -1;
 			return;
 		}
 	}
-#endif
 
 	/* Handle connections which need attention */
 	for (i = 0; i < axel->conf->num_connections; i++) 
@@ -359,7 +377,7 @@ void axel_do(axel_t *axel)
 		if (axel->conn[i].enabled) 
 		{
 #if WIN32
-			if (SOCKET_ERROR != WSAEventSelect(axel->conn[i].fd, hEventObject, FD_READ))
+			if (FD_ISSET(axel->conn[i].fd, &fds))
 #else
 			if (FD_ISSET(axel->conn[i].fd, fds))
 #endif
