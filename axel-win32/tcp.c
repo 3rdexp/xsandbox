@@ -49,18 +49,23 @@ int tcp_connect(char *hostname, int port, char *local_if)
 #endif
 	fprintf(stderr, "tcp_connect(%s, %i) = ", hostname, port);
 #endif
-	
+
+#if WIN32
+	if (NULL == (host = gethostbyname(hostname))) 
+	{
+#ifdef DEBUG
+		printf("DEBUG gethostbyname error %d\n", WSAGetLastError());
+#endif
+		return INVALID_SOCKET;
+	}
+#else
 	/* Why this loop? Because the call might return an empty record.
 	   At least it very rarely does, on my system... */
 	for (fd = 0; fd < 5; fd++)
 	{
 		if (NULL == (host = gethostbyname(hostname))) 
 		{
-#if WIN32
-			return INVALID_SOCKET;
-#else
 			return -1;
-#endif
 		}
 		if (*host->h_name) 
 		{
@@ -69,13 +74,10 @@ int tcp_connect(char *hostname, int port, char *local_if)
 	}
 	if (!host || !host->h_name || !*host->h_name) 
 	{
-#if WIN32
-		return INVALID_SOCKET;
-#else
 		return -1;
-#endif
 	}
-	
+#endif
+
 #if WIN32
 	if (INVALID_SOCKET == (fd = socket(AF_INET, SOCK_STREAM, 0))) 
 	{

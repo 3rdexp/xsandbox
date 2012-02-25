@@ -367,7 +367,7 @@ int main( int argc, char *argv[] )
 	/* Install save_state signal handler for resuming support	*/
 	signal( SIGINT, stop );
 	signal( SIGTERM, stop );
-	
+
 	while( !axel->ready && run )
 	{
 		long long int prev, done;
