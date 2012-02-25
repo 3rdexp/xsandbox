@@ -48,9 +48,7 @@
 #include <sys/stat.h>
 #if !WIN32
 #include <sys/time.h>
-#endif
 #include <sys/types.h>
-#if !WIN32
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/in_systm.h>
@@ -112,8 +110,8 @@ typedef message_t if_t;
 #include "conn.h"
 #include "search.h"
 
-#define min( a, b )		( (a) < (b) ? (a) : (b) )
-#define max( a, b )		( (a) > (b) ? (a) : (b) )
+#define min(a, b)		((a) < (b) ? (a) : (b))
+#define max(a, b)		((a) > (b) ? (a) : (b))
 
 typedef struct
 {
@@ -131,11 +129,11 @@ typedef struct
 	url_t *url;
 } axel_t;
 
-axel_t *axel_new( conf_t *conf, int count, void *url );
-int axel_open( axel_t *axel );
-void axel_start( axel_t *axel );
-void axel_do( axel_t *axel );
-void axel_close( axel_t *axel );
+axel_t *axel_new(conf_t *conf, int count, void *url);
+int axel_open(axel_t *axel);
+void axel_start(axel_t *axel);
+void axel_do(axel_t *axel);
+void axel_close(axel_t *axel);
 
 double gettime();
 

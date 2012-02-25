@@ -97,7 +97,7 @@ int tcp_connect(char *hostname, int port, char *local_if)
 		local.sin_port = 0;
 		local.sin_addr.s_addr = inet_addr(local_if);
 #if WIN32
-		if (SOCKET_ERROR == bind(fd, (struct sockaddr *) &local, sizeof(struct sockaddr_in))) 
+		if (SOCKET_ERROR == bind(fd, (struct sockaddr *)&local, sizeof(struct sockaddr_in))) 
 		{
 #ifdef DEBUG
 			printf("DEBUG bind error %d\n", WSAGetLastError());
@@ -144,7 +144,7 @@ int tcp_connect(char *hostname, int port, char *local_if)
 }
 
 /* FIXME: can not get ip under WIN32 */
-int get_if_ip( char *iface, char *ip )
+int get_if_ip(char *iface, char *ip)
 {
 #if WIN32
 	SOCKET fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);

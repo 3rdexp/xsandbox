@@ -27,7 +27,11 @@
 
 int ftp_connect( ftp_t *conn, char *host, int port, char *user, char *pass )
 {
+#if WIN32
+	conn->data_fd = INVALID_SOCKET;
+#else
 	conn->data_fd = -1;
+#endif
 	conn->message = malloc( MAX_STRING );
 	
 	if( ( conn->fd = tcp_connect( host, port, conn->local_if ) ) == -1 )
@@ -65,9 +69,17 @@ int ftp_connect( ftp_t *conn, char *host, int port, char *user, char *pass )
 void ftp_disconnect( ftp_t *conn )
 {
 	if( conn->fd > 0 )
+#if WIN32
+		closesocket(conn->fd);
+#else
 		close( conn->fd );
+#endif
 	if( conn->data_fd > 0 )
+#if WIN32
+		closesocket(conn->data_fd);
+#else
 		close( conn->data_fd );
+#endif
 	if( conn->message )
 	{
 		free( conn->message );
@@ -75,7 +87,11 @@ void ftp_disconnect( ftp_t *conn )
 	}
 
 	*conn->cwd = 0;
+#if WIN32
+	conn->fd = conn->data_fd = INVALID_SOCKET;
+#else
 	conn->fd = conn->data_fd = -1;
+#endif
 }
 
 /* Change current working directory					*/
@@ -152,8 +168,13 @@ long long int ftp_size( ftp_t *conn, char *file, int maxredir )
 			memset( reply + size / 2, 0, size / 2 );
 		}
 	}
+#if WIN32
+	closesocket(conn->data_fd);
+	conn->data_fd = INVALID_SOCKET;
+#else
 	close( conn->data_fd );
 	conn->data_fd = -1;
+#endif
 	
 	if( ftp_wait( conn ) / 100 != 2 )
 	{
