@@ -291,18 +291,10 @@ void axel_start(axel_t *axel)
 			}
 		}
 	}
-	#if WIN32
-	for (i = 0; i < axel->conf->num_connections; i++) 
-	{
-		WaitForSingleObject(axel->conn[i].setup_thread, INFINITE);
-	}
-#endif
+
 	/* The real downloading will start now, so let's start counting	*/
 	axel->start_time = gettime();
 	axel->ready = 0;
-#ifdef DEBUG
-	printf("DEBUG WaitForSingleObject\n");
-#endif
 }
 
 /* Main 'loop' */

@@ -38,7 +38,7 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
 	
 	if (NULL != proxy) 
 	{ 
-		if(0 != *proxy) 
+		if (0 != *proxy) 
 		{
 			sprintf(conn->host, "%s:%i", host, port);
 			if(!conn_set(tconn, proxy))
@@ -179,7 +179,7 @@ int http_exec(http_t *conn)
 	while (1)
 	{
 #if WIN32
-		if (recv(conn->fd, s, 1, 0) <= 0) 
+		if (SOCKET_ERROR == recv(conn->fd, s, 1, 0)) 
 #else
 		if (read(conn->fd, s, 1) <= 0)
 #endif
