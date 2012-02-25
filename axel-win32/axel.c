@@ -26,14 +26,14 @@
 #include "axel.h"
 
 /* Axel */
-static void save_state( axel_t *axel );
+static void save_state(axel_t *axel);
 #if WIN32
 static DWORD WINAPI setup_thread_cb(LPVOID);
 #else
-static void *setup_thread_cb( void * );
+static void *setup_thread_cb(void *);
 #endif
-static void axel_message( axel_t *axel, char *format, ... );
-static void axel_divide( axel_t *axel );
+static void axel_message(axel_t *axel, char *format, ...);
+static void axel_divide(axel_t *axel);
 
 static char *buffer = NULL;
 
@@ -61,7 +61,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 	memset(axel->conn, 0, sizeof(conn_t) * axel->conf->num_connections);
 	if (0 < axel->conf->max_speed)
 	{
-		if ((float)axel->conf->max_speed / axel->conf->buffer_size < 0.5 )
+		if ((float)axel->conf->max_speed / axel->conf->buffer_size < 0.5)
 		{
 			if (2 <= axel->conf->verbose) 
 			{
@@ -100,7 +100,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 			}
 		}
 	}
-	
+
 	axel->conn[0].conf = axel->conf;
 	if (!conn_set(&axel->conn[0], axel->url->text))
 	{
@@ -116,7 +116,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 	http_decode(axel->filename);
 	if (0 == *axel->filename) 
 	{	
-		/* Index page == no fn		*/
+		/* Index page == no fn */
 		strncpy(axel->filename, axel->conf->default_filename, MAX_STRING);
 	}
 	if ((s = strchr(axel->filename, '?')) != NULL && axel->conf->strip_cgi_parameters) 
@@ -159,7 +159,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 }
 
 /* Open a local file to store the downloaded data */
-int axel_open( axel_t *axel )
+int axel_open(axel_t *axel)
 {
 	int i, fd;
 	long long int j;
@@ -176,69 +176,71 @@ int axel_open( axel_t *axel )
 	   single connection download if necessary */
 	if (!axel->conn[0].supported)
 	{
-		axel_message( axel, _("Server unsupported, "
-			"starting from scratch with one connection.") );
+		axel_message(axel, _("Server unsupported, "
+			"starting from scratch with one connection."));
 		axel->conf->num_connections = 1;
-		axel->conn = realloc( axel->conn, sizeof( conn_t ) );
-		axel_divide( axel );
+		axel->conn = realloc(axel->conn, sizeof(conn_t));
+		axel_divide(axel);
 	}
 	else if ((fd = open(buffer, O_RDONLY)) != -1)
 	{
-		read( fd, &axel->conf->num_connections, sizeof( axel->conf->num_connections ) );
+		read(fd, &axel->conf->num_connections, sizeof(axel->conf->num_connections));
 		
-		axel->conn = realloc( axel->conn, sizeof( conn_t ) * axel->conf->num_connections );
-		memset( axel->conn + 1, 0, sizeof( conn_t ) * ( axel->conf->num_connections - 1 ) );
+		axel->conn = realloc(axel->conn, sizeof(conn_t) * axel->conf->num_connections);
+		memset(axel->conn + 1, 0, sizeof(conn_t) * (axel->conf->num_connections - 1));
 
-		axel_divide( axel );
+		axel_divide(axel);
 		
-		read( fd, &axel->bytes_done, sizeof( axel->bytes_done ) );
-		for( i = 0; i < axel->conf->num_connections; i ++ )
-			read( fd, &axel->conn[i].currentbyte, sizeof( axel->conn[i].currentbyte ) );
-
-		axel_message( axel, _("State file found: %lld bytes downloaded, %lld to go."),
-			axel->bytes_done, axel->size - axel->bytes_done );
-		
-		close( fd );
-		
-		if( ( axel->outfd = open( axel->filename, O_WRONLY, 0666 ) ) == -1 )
+		read(fd, &axel->bytes_done, sizeof(axel->bytes_done));
+		for (i = 0; i < axel->conf->num_connections; i++) 
 		{
-			axel_message( axel, _("Error opening local file") );
-			return( 0 );
+			read(fd, &axel->conn[i].currentbyte, sizeof(axel->conn[i].currentbyte));
+		}
+
+		axel_message(axel, _("State file found: %lld bytes downloaded, %lld to go."),
+			axel->bytes_done, axel->size - axel->bytes_done);
+		
+		close(fd);
+		
+		if ((axel->outfd = open(axel->filename, O_WRONLY, 0666)) == -1)
+		{
+			axel_message(axel, _("Error opening local file"));
+			return 0;
 		}
 	}
 
 	/* If outfd == -1 we have to start from scrath now		*/
-	if( axel->outfd == -1 )
+	if (axel->outfd == -1)
 	{
-		axel_divide( axel );
+		axel_divide(axel);
 
-		if( ( axel->outfd = open( axel->filename, O_CREAT | O_WRONLY, 0666 ) ) == -1 )
+		if ((axel->outfd = open(axel->filename, O_CREAT | O_WRONLY, 0666)) == -1)
 		{
-			axel_message( axel, _("Error opening local file") );
-			return( 0 );
+			axel_message(axel, _("Error opening local file"));
+			return 0;
 		}
 		
 		/* And check whether the filesystem can handle seeks to
 		   past-EOF areas.. Speeds things up. :) AFAIK this
 		   should just not happen:				*/
-		if( lseek( axel->outfd, axel->size, SEEK_SET ) == -1 && axel->conf->num_connections > 1 )
+		if (lseek(axel->outfd, axel->size, SEEK_SET) == -1 && axel->conf->num_connections > 1)
 		{
 			/* But if the OS/fs does not allow to seek behind
 			   EOF, we have to fill the file with zeroes before
 			   starting. Slow..				*/
-			axel_message( axel, _("Crappy filesystem/OS.. Working around. :-(") );
-			lseek( axel->outfd, 0, SEEK_SET );
-			memset( buffer, 0, axel->conf->buffer_size );
+			axel_message(axel, _("Crappy filesystem/OS.. Working around. :-("));
+			lseek(axel->outfd, 0, SEEK_SET);
+			memset(buffer, 0, axel->conf->buffer_size);
 			j = axel->size;
-			while( j > 0 )
+			while (0 < j)
 			{
-				write( axel->outfd, buffer, min( j, axel->conf->buffer_size ) );
+				write(axel->outfd, buffer, min(j, axel->conf->buffer_size));
 				j -= axel->conf->buffer_size;
 			}
 		}
 	}
 	
-	return( 1 );
+	return 1;
 }
 
 /* Start downloading */
@@ -289,28 +291,32 @@ void axel_start(axel_t *axel)
 			}
 		}
 	}
-	/* The real downloading will start now, so let's start counting	*/
-	axel->start_time = gettime();
-	axel->ready = 0;
-#if WIN32
+	#if WIN32
 	for (i = 0; i < axel->conf->num_connections; i++) 
 	{
 		WaitForSingleObject(axel->conn[i].setup_thread, INFINITE);
 	}
 #endif
+	/* The real downloading will start now, so let's start counting	*/
+	axel->start_time = gettime();
+	axel->ready = 0;
+#ifdef DEBUG
+	printf("DEBUG WaitForSingleObject\n");
+#endif
 }
 
-/* Main 'loop'								*/
-void axel_do( axel_t *axel )
+/* Main 'loop' */
+void axel_do(axel_t *axel)
 {
 #if WIN32
-	fd_set fds;
+	WSAEVENT hEventObject = WSACreateEvent();
 #else
 	fd_set fds[1];
-#endif
-	int i, hifd;
-	long long int remaining, size;
+	int hifd;
 	struct timeval timeval[1];
+#endif
+	int i;
+	long long int remaining, size;
 
 	/* Create statefile if necessary */
 	if (axel->next_state < gettime())
@@ -318,39 +324,24 @@ void axel_do( axel_t *axel )
 		save_state(axel);
 		axel->next_state = gettime() + axel->conf->save_state_interval;
 	}
-	
+
+#if !WIN32	
 	/* Wait for data on (one of) the connections */
-#if WIN32
-	FD_ZERO(&fds);
-	hifd = 1;
-#else
 	FD_ZERO(fds);
 	hifd = 0;
-#endif
 	for (i = 0; i < axel->conf->num_connections; i++)
 	{
 		if (axel->conn[i].enabled) 
 		{
-#if WIN32
-			FD_SET(axel->conn[i].fd, &fds);
-#else
 			FD_SET(axel->conn[i].fd, fds);
-#endif
 		}
-#if WIN32
-		if (INVALID_SOCKET == axel->conn[i].fd) 
-		{
-			hifd = 0;
-		}
-#else
 		hifd = max(hifd, axel->conn[i].fd);
-#endif
 	}
 
-	if (hifd == 0)
+	if (0 == hifd)
 	{
 #ifdef DEBUG
-		printf("DEBUG no connection\n");
+		printf("DEBUG no connection yet. Wait...\n");
 #endif
 		/* No connections yet. Wait... */
 		usleep(100000);
@@ -362,19 +353,13 @@ void axel_do( axel_t *axel )
 		timeval->tv_usec = 100000;
 		/* A select() error probably means it was interrupted
 		   by a signal, or that something else's very wrong...	*/
-#if WIN32
-		if (SOCKET_ERROR == select(0, &fds, NULL, NULL, timeval)) 
-#else
 		if (-1 == select(hifd + 1, fds, NULL, NULL, timeval ))
-#endif
 		{
-#if WIN32
-			printf("DEBUG select error %d\n", WSAGetLastError());
-#endif
 			axel->ready = -1;
 			return;
 		}
 	}
+#endif
 
 	/* Handle connections which need attention */
 	for (i = 0; i < axel->conf->num_connections; i++) 
@@ -382,7 +367,7 @@ void axel_do( axel_t *axel )
 		if (axel->conn[i].enabled) 
 		{
 #if WIN32
-			if (FD_ISSET(axel->conn[i].fd, &fds))
+			if (SOCKET_ERROR != WSAEventSelect(axel->conn[i].fd, hEventObject, FD_READ))
 #else
 			if (FD_ISSET(axel->conn[i].fd, fds))
 #endif
@@ -480,7 +465,6 @@ conn_check:
 			{	
 				// Wait for termination of this thread
 #if WIN32
-				printf("DEBUG WaitForSingleObject\n");
 				WaitForSingleObject(axel->conn[i].setup_thread, INFINITE);
 #else
 				pthread_join(*(axel->conn[i].setup_thread), NULL);
@@ -654,7 +638,7 @@ void save_state(axel_t *axel)
 	close(fd);
 }
 
-/* Thread used to set up a connection					*/
+/* Thread used to set up a connection */
 #if WIN32
 static DWORD WINAPI setup_thread_cb(LPVOID c) 
 #else
@@ -681,7 +665,7 @@ void *setup_thread_cb( void *c )
 #if WIN32
 			return 0;
 #else
-			return( NULL );
+			return NULL;
 #endif
 		}
 	}
@@ -721,7 +705,7 @@ static void axel_message(axel_t *axel, char *format, ...)
 }
 
 /* Divide the file and set the locations for each connection		*/
-static void axel_divide( axel_t *axel )
+static void axel_divide(axel_t *axel)
 {
 	int i;
 	

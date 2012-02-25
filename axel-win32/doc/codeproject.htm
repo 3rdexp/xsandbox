@@ -44,6 +44,7 @@ Author:      Xiang Zhai
 Email:       xiangzhai83@gmail.com
 Language:    C
 Platform:    Windows
+Tag:         Win32, Dev, Threading, socket, Network, TCP/IP
 Technology:  Windows Socket 2.x, Multi-Thread
 Level:       Intermediate
 Description: Porting Axel a lighter download accelerator for Linux and other Unices to NATIVE WIN32
@@ -59,13 +60,17 @@ License:     GPLv2
 <li><a href="src-20120224.zip">Download src-20120224.zip - 44 Kb </a></li>
 </ul>
 
+<ul>
+<li>SVN goes here <a href="https://xsandbox.googlecode.com/svn/trunk/axel-win32" target="_blank">https://xsandbox.googlecode.com/svn/trunk/axel-win32</a></li>
+</ul>
+
 <!-------------------------------     STEP 3      --------------------------->
 
 <!--  Add the article text. Please use simple formatting (<h2>, <p> etc)   -->
 
 <h2>Introduction</h2>
 
-<p>Axel is a lighter download accelerator for Linux and other Unices. It should compile (and run) on BSD, Solaris, Darwin (Mac OS X) and Win32 (Cygwin) systems.</p>
+<p><a href="http://axel.alioth.debian.org" target="_blank">Axel</a> is a lighter download accelerator for Linux and other Unices. It should compile (and run) on BSD, Solaris, Darwin (Mac OS X) and Win32 (Cygwin) systems.</p>
 <p>Porting to NATIVE WIN32 without Cygwin, what I did in the #if WIN32 ... #endif, for example:
 <li>Changed Linux file descriptor for the new socket to WIN32 SOCKET descriptor referencing the new socket;</li>
 <li>Changed close, write, read to closesocket, send, recv;</li>
@@ -129,8 +134,10 @@ Write the buffer from http header's reply to temporary file *.st (Axel style), t
 conf_t conf;
 conf_init(&conf);
 conf.num_connections = 10;  /* multi-thread numbers */
+conf.add_header_count = 0;
 /* axel_t object construct */
 axel_t *axel = axel_new(&conf, 0, "http://localhost");
+strcpy(axel->filename, "filename.htm");
 axel_open(axel);
 axel_start(axel);
 /* Have not downloaded the total content */
@@ -154,8 +161,9 @@ axel_close(axel);
 
 <h2>History</h2>
 
-<p>2012-02-24 xzhai
-* Ported Axel v2.4 to WIN32 without Cygwin.
+<p>
+2012-02-24 xzhai
+<li>Ported Axel v2.4 to WIN32 without Cygwin.</li>
 </p>
 
 <!-------------------------------    That's it!   --------------------------->
