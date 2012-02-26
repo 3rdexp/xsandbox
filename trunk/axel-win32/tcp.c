@@ -79,7 +79,7 @@ int tcp_connect(char *hostname, int port, char *local_if)
 #endif
 
 #if WIN32
-	if (INVALID_SOCKET == (fd = socket(AF_INET, SOCK_STREAM, 0))) 
+	if (INVALID_SOCKET == (fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))) 
 	{
 #ifdef DEBUG
 		printf("DEBUG socket error %d\n", WSAGetLastError());
