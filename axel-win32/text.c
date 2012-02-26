@@ -364,9 +364,9 @@ int main( int argc, char *argv[] )
 	}
 	axel->start_byte = axel->bytes_done;
 	
-	/* Install save_state signal handler for resuming support	*/
+	/* Install save_state signal handler for resuming support
 	signal( SIGINT, stop );
-	signal( SIGTERM, stop );
+	signal( SIGTERM, stop );	*/
 
 	while( !axel->ready && run )
 	{

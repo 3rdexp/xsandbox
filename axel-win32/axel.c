@@ -34,8 +34,14 @@ static void *setup_thread_cb(void *);
 #endif
 static void axel_message(axel_t *axel, char *format, ...);
 static void axel_divide(axel_t *axel);
+#if WIN32
+static void remove_ctrlm(char *des, char *ori);
+#endif
 
 static char *buffer = NULL;
+#if WIN32
+static char *m_remove = NULL;
+#endif
 
 /* Create a new axel_t structure */
 axel_t *axel_new(conf_t *conf, int count, void *url)
@@ -75,6 +81,12 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 	{
 		buffer = malloc(max(MAX_STRING, axel->conf->buffer_size));
 	}
+#if WIN32
+	if (NULL == m_remove) 
+	{
+		m_remove = malloc(max(MAX_STRING, axel->conf->buffer_size));
+	}
+#endif
 	
 	if (0 == count)
 	{
@@ -161,7 +173,8 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 /* Open a local file to store the downloaded data */
 int axel_open(axel_t *axel)
 {
-	int i, fd;
+	int i;
+	int fd;
 	long long int j;
 	
 	if (0 < axel->conf->verbose) 
@@ -297,16 +310,39 @@ void axel_start(axel_t *axel)
 	axel->ready = 0;
 }
 
+#if WIN32
+/* TODO: remove ^M char from buffer, ^M is CTRL-V CTRL-M */
+static void remove_ctrlm(char *des, char *ori) 
+{
+	int i;
+	for (i = 0; i < strlen(ori); i++) 
+	{
+		if (22 == ori[i]) 
+		{
+			des[i] = 32;
+		} 
+		else if (13 == ori[i]) 
+		{
+			des[i] = 32;
+		} 
+		else 
+		{
+			des[i] = ori[i];
+		}
+	}
+}
+#endif
+
 /* Main 'loop' */
 void axel_do(axel_t *axel)
 {
 #if WIN32
-	fd_set fds;
+	fd_set *fds = malloc(sizeof(fd_set) * axel->conf->num_connections);
 #else
 	fd_set fds[1];
 #endif
-	int hifd;
 	struct timeval timeval[1];
+	int hifd;
 	int i;
 	long long int remaining, size;
 
@@ -318,33 +354,20 @@ void axel_do(axel_t *axel)
 	}
 
 	/* Wait for data on (one of) the connections */
-#if WIN32
-	FD_ZERO(&fds);
-	hifd = axel->conf->num_connections;
-#else
 	FD_ZERO(fds);
 	hifd = 0;
-#endif
 	for (i = 0; i < axel->conf->num_connections; i++)
 	{
 		if (axel->conn[i].enabled) 
 		{
-#if WIN32
-			FD_SET(axel->conn[i].fd, &fds);
-#else
 			FD_SET(axel->conn[i].fd, fds);
-#endif
 		}
-#if WIN32
-		if (INVALID_SOCKET == axel->conn[i].fd) 
-		{
-			hifd--;
-		}
-#else
+#if !WIN32
 		hifd = max(hifd, axel->conn[i].fd);
 #endif
 	}
 
+#if !WIN32
 	if (0 == hifd)
 	{
 #ifdef DEBUG
@@ -355,17 +378,24 @@ void axel_do(axel_t *axel)
 		goto conn_check;
 	}
 	else
+#endif
 	{
 		timeval->tv_sec = 0;
 		timeval->tv_usec = 100000;
 		/* A select() error probably means it was interrupted
 		   by a signal, or that something else's very wrong...	*/
 #if WIN32
-		if (SOCKET_ERROR == select(hifd + 1, &fds, NULL, NULL, timeval))
+		if (SOCKET_ERROR == select(0, fds, NULL, NULL, timeval) 
+			&& 1 != axel->conf->num_connections)
 #else
 		if (-1 == select(hifd + 1, fds, NULL, NULL, timeval))
 #endif
 		{
+#if WIN32
+#ifdef DEBUG
+			printf("DEBUG select error %d\n", WSAGetLastError());
+#endif
+#endif
 			axel->ready = -1;
 			return;
 		}
@@ -376,14 +406,11 @@ void axel_do(axel_t *axel)
 	{
 		if (axel->conn[i].enabled) 
 		{
-#if WIN32
-			if (FD_ISSET(axel->conn[i].fd, &fds))
-#else
 			if (FD_ISSET(axel->conn[i].fd, fds))
-#endif
 			{
 				axel->conn[i].last_transfer = gettime();
 #if WIN32
+				memset(buffer, 0, max(MAX_STRING, axel->conf->buffer_size));
 				size = recv(axel->conn[i].fd, buffer, axel->conf->buffer_size, 0);
 #else
 				size = read(axel->conn[i].fd, buffer, axel->conf->buffer_size);
@@ -436,7 +463,13 @@ void axel_do(axel_t *axel)
 				}
 				/* This should always succeed..				*/
 				lseek(axel->outfd, axel->conn[i].currentbyte, SEEK_SET);
+#if WIN32
+				memset(m_remove, 0, max(MAX_STRING, axel->conf->buffer_size));
+				remove_ctrlm(m_remove, buffer);
+				if (write(axel->outfd, m_remove, size) != size)
+#else
 				if (write(axel->outfd, buffer, size) != size)
+#endif
 				{
 					axel_message(axel, _("Write error!"));
 					axel->ready = -1;
@@ -456,12 +489,16 @@ void axel_do(axel_t *axel)
 					conn_disconnect(&axel->conn[i]);
 					axel->conn[i].enabled = 0;
 				}
-			} 
+			}
 		}
 	}
 	
 	if (axel->ready) 
 	{
+		if (fds) 
+		{
+			free(fds);
+		}
 		return;
 	}
 	
