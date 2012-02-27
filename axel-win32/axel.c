@@ -35,6 +35,7 @@ static void *setup_thread_cb(void *);
 static void axel_message(axel_t *axel, char *format, ...);
 static void axel_divide(axel_t *axel);
 #if WIN32
+static int is_readytoread(axel_t *axel, SOCKET fd, WSAEVENT hEventObject);
 static void remove_ctrlm(char *des, char *ori);
 #endif
 
@@ -333,16 +334,31 @@ static void remove_ctrlm(char *des, char *ori)
 }
 #endif
 
+#if WIN32
+static int is_readytoread(axel_t *axel, SOCKET fd, WSAEVENT hEventObject) 
+{
+	if (1 == axel->conf->num_connections) 
+	{
+		return 1;
+	}
+	if (0 == WSAEventSelect(fd, hEventObject, FD_READ)) 
+	{
+		return 1;
+	}
+	return 0;
+}
+#endif
+
 /* Main 'loop' */
 void axel_do(axel_t *axel)
 {
 #if WIN32
-	fd_set *fds = malloc(sizeof(fd_set) * axel->conf->num_connections);
+	WSAEVENT hEventObject;
 #else
 	fd_set fds[1];
-#endif
 	struct timeval timeval[1];
 	int hifd;
+#endif
 	int i;
 	long long int remaining, size;
 
@@ -353,7 +369,9 @@ void axel_do(axel_t *axel)
 		axel->next_state = gettime() + axel->conf->save_state_interval;
 	}
 
+#if !WIN32
 	/* Wait for data on (one of) the connections */
+	hifd = axel->conf->num_connections;
 	FD_ZERO(fds);
 	hifd = 0;
 	for (i = 0; i < axel->conf->num_connections; i++)
@@ -362,12 +380,9 @@ void axel_do(axel_t *axel)
 		{
 			FD_SET(axel->conn[i].fd, fds);
 		}
-#if !WIN32
 		hifd = max(hifd, axel->conn[i].fd);
-#endif
 	}
 
-#if !WIN32
 	if (0 == hifd)
 	{
 #ifdef DEBUG
@@ -378,35 +393,30 @@ void axel_do(axel_t *axel)
 		goto conn_check;
 	}
 	else
-#endif
 	{
 		timeval->tv_sec = 0;
 		timeval->tv_usec = 100000;
 		/* A select() error probably means it was interrupted
 		   by a signal, or that something else's very wrong...	*/
-#if WIN32
-		if (SOCKET_ERROR == select(0, fds, NULL, NULL, timeval) 
-			&& 1 != axel->conf->num_connections)
-#else
 		if (-1 == select(hifd + 1, fds, NULL, NULL, timeval))
-#endif
 		{
-#if WIN32
-#ifdef DEBUG
-			printf("DEBUG select error %d\n", WSAGetLastError());
-#endif
-#endif
 			axel->ready = -1;
 			return;
 		}
 	}
+#endif
 
 	/* Handle connections which need attention */
 	for (i = 0; i < axel->conf->num_connections; i++) 
 	{
 		if (axel->conn[i].enabled) 
 		{
+#if WIN32
+			hEventObject = WSACreateEvent();
+			if (1 == is_readytoread(axel, axel->conn[i].fd, hEventObject))
+#else
 			if (FD_ISSET(axel->conn[i].fd, fds))
+#endif
 			{
 				axel->conn[i].last_transfer = gettime();
 #if WIN32
@@ -415,7 +425,11 @@ void axel_do(axel_t *axel)
 #else
 				size = read(axel->conn[i].fd, buffer, axel->conf->buffer_size);
 #endif
+#if WIN32
+				if (SOCKET_ERROR == size)
+#else
 				if (-1 == size)
+#endif
 				{
 					if (axel->conf->verbose)
 					{
@@ -430,7 +444,7 @@ void axel_do(axel_t *axel)
 				{
 					if (axel->conf->verbose)
 					{
-						/* Only abnormal behaviour if:		*/
+						/* Only abnormal behaviour if: */
 						if (axel->conn[i].currentbyte < axel->conn[i].lastbyte && axel->size != INT_MAX)
 						{
 							axel_message(axel, _("Connection %i unexpectedly closed"), i);
@@ -490,15 +504,13 @@ void axel_do(axel_t *axel)
 					axel->conn[i].enabled = 0;
 				}
 			}
+#if WIN32
+			WSACloseEvent(hEventObject);
+#endif
 		}
 	}
-	
 	if (axel->ready) 
 	{
-		if (fds) 
-		{
-			free(fds);
-		}
 		return;
 	}
 	
