@@ -261,14 +261,8 @@ int conn_setup(conn_t *conn)
 	if (conn->ftp->fd <= 0 && conn->http->fd <= 0) 
 #endif
 	{
-#ifdef DEBUG
-		printf("DEBUG force to init conn\n");
-#endif
 		if (!conn_init(conn)) 
 		{
-#ifdef DEBUG
-			printf("DEBUG init error\n");
-#endif
 			return 0;
 		}
 	}

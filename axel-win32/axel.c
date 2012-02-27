@@ -36,13 +36,9 @@ static void axel_message(axel_t *axel, char *format, ...);
 static void axel_divide(axel_t *axel);
 #if WIN32
 static int is_readytoread(axel_t *axel, SOCKET fd, WSAEVENT hEventObject);
-static void remove_ctrlm(char *des, char *ori);
 #endif
 
 static char *buffer = NULL;
-#if WIN32
-static char *m_remove = NULL;
-#endif
 
 /* Create a new axel_t structure */
 axel_t *axel_new(conf_t *conf, int count, void *url)
@@ -82,12 +78,6 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 	{
 		buffer = malloc(max(MAX_STRING, axel->conf->buffer_size));
 	}
-#if WIN32
-	if (NULL == m_remove) 
-	{
-		m_remove = malloc(max(MAX_STRING, axel->conf->buffer_size));
-	}
-#endif
 	
 	if (0 == count)
 	{
@@ -175,7 +165,12 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 int axel_open(axel_t *axel)
 {
 	int i;
+#if WIN32
+	HANDLE fd;
+	DWORD byte;
+#else
 	int fd;
+#endif
 	long long int j;
 	
 	if (0 < axel->conf->verbose) 
@@ -183,8 +178,11 @@ int axel_open(axel_t *axel)
 		axel_message(axel, _("Opening output file %s"), axel->filename);
 	}
 	snprintf(buffer, MAX_STRING, "%s.st", axel->filename);
-	
+#if WIN32
+	axel->outfd = INVALID_HANDLE_VALUE;
+#else
 	axel->outfd = -1;
+#endif
 	
 	/* Check whether server knows about RESTart and switch back to
 	   single connection download if necessary */
@@ -196,27 +194,50 @@ int axel_open(axel_t *axel)
 		axel->conn = realloc(axel->conn, sizeof(conn_t));
 		axel_divide(axel);
 	}
+#if WIN32
+	else if (INVALID_HANDLE_VALUE != (fd = CreateFile(buffer, 
+		GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)))
+#else
 	else if ((fd = open(buffer, O_RDONLY)) != -1)
+#endif
 	{
+#if WIN32
+		ReadFile(fd, &axel->conf->num_connections, sizeof(axel->conf->num_connections), &byte, NULL);
+#else
 		read(fd, &axel->conf->num_connections, sizeof(axel->conf->num_connections));
+#endif
 		
 		axel->conn = realloc(axel->conn, sizeof(conn_t) * axel->conf->num_connections);
 		memset(axel->conn + 1, 0, sizeof(conn_t) * (axel->conf->num_connections - 1));
 
 		axel_divide(axel);
-		
+#if WIN32
+		ReadFile(fd, &axel->bytes_done, sizeof(axel->bytes_done), &byte, NULL);
+#else
 		read(fd, &axel->bytes_done, sizeof(axel->bytes_done));
+#endif
 		for (i = 0; i < axel->conf->num_connections; i++) 
 		{
+#if WIN32
+			ReadFile(fd, &axel->conn[i].currentbyte, sizeof(axel->conn[i].currentbyte), &byte, NULL);
+#else
 			read(fd, &axel->conn[i].currentbyte, sizeof(axel->conn[i].currentbyte));
+#endif
 		}
 
 		axel_message(axel, _("State file found: %lld bytes downloaded, %lld to go."),
 			axel->bytes_done, axel->size - axel->bytes_done);
-		
+#if WIN32
+		CloseHandle(fd);
+#else
 		close(fd);
-		
+#endif
+#if WIN32
+		if (INVALID_HANDLE_VALUE == (axel->outfd = CreateFile(axel->filename, 
+			GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)))
+#else
 		if ((axel->outfd = open(axel->filename, O_WRONLY, 0666)) == -1)
+#endif
 		{
 			axel_message(axel, _("Error opening local file"));
 			return 0;
@@ -224,11 +245,19 @@ int axel_open(axel_t *axel)
 	}
 
 	/* If outfd == -1 we have to start from scrath now		*/
+#if WIN32
+	if (INVALID_HANDLE_VALUE == axel->outfd)
+#else
 	if (axel->outfd == -1)
+#endif
 	{
 		axel_divide(axel);
-
+#if WIN32
+		if (INVALID_HANDLE_VALUE == (axel->outfd = CreateFile(axel->filename, 
+			GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)))
+#else
 		if ((axel->outfd = open(axel->filename, O_CREAT | O_WRONLY, 0666)) == -1)
+#endif
 		{
 			axel_message(axel, _("Error opening local file"));
 			return 0;
@@ -237,18 +266,31 @@ int axel_open(axel_t *axel)
 		/* And check whether the filesystem can handle seeks to
 		   past-EOF areas.. Speeds things up. :) AFAIK this
 		   should just not happen:				*/
+#if WIN32
+		if (INVALID_SET_FILE_POINTER == SetFilePointer(axel->outfd, axel->size, NULL, FILE_BEGIN) 
+			&& 1 < axel->conf->num_connections)
+#else
 		if (lseek(axel->outfd, axel->size, SEEK_SET) == -1 && axel->conf->num_connections > 1)
+#endif
 		{
 			/* But if the OS/fs does not allow to seek behind
 			   EOF, we have to fill the file with zeroes before
 			   starting. Slow..				*/
 			axel_message(axel, _("Crappy filesystem/OS.. Working around. :-("));
+#if WIN32
+			SetFilePointer(axel->outfd, 0, NULL, FILE_BEGIN);
+#else
 			lseek(axel->outfd, 0, SEEK_SET);
+#endif
 			memset(buffer, 0, axel->conf->buffer_size);
 			j = axel->size;
 			while (0 < j)
 			{
+#if WIN32
+				WriteFile(axel->outfd, buffer, min(j, axel->conf->buffer_size), &byte, NULL);
+#else
 				write(axel->outfd, buffer, min(j, axel->conf->buffer_size));
+#endif
 				j -= axel->conf->buffer_size;
 			}
 		}
@@ -354,6 +396,7 @@ void axel_do(axel_t *axel)
 {
 #if WIN32
 	WSAEVENT hEventObject;
+	DWORD byte;
 #else
 	fd_set fds[1];
 	struct timeval timeval[1];
@@ -476,12 +519,11 @@ void axel_do(axel_t *axel)
 					/* Don't terminate, still stuff to write!	*/
 				}
 				/* This should always succeed..				*/
-				lseek(axel->outfd, axel->conn[i].currentbyte, SEEK_SET);
 #if WIN32
-				memset(m_remove, 0, max(MAX_STRING, axel->conf->buffer_size));
-				remove_ctrlm(m_remove, buffer);
-				if (write(axel->outfd, m_remove, size) != size)
+				SetFilePointer(axel->outfd, axel->conn[i].currentbyte, NULL, FILE_BEGIN);
+				if (0 == WriteFile(axel->outfd, buffer, size, &byte, NULL))
 #else
+				lseek(axel->outfd, axel->conn[i].currentbyte, SEEK_SET);
 				if (write(axel->outfd, buffer, size) != size)
 #endif
 				{
@@ -642,7 +684,11 @@ void axel_close(axel_t *axel)
 	}
 	
 	/* Close all connections and local file				*/
+#if WIN32
+	CloseHandle(axel->outfd);
+#else
 	close(axel->outfd);
+#endif
 	for (i = 0; i < axel->conf->num_connections; i++) 
 	{
 		conn_disconnect(&axel->conn[i]);
