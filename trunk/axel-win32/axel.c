@@ -35,7 +35,7 @@ static void *setup_thread_cb(void *);
 static void axel_message(axel_t *axel, char *format, ...);
 static void axel_divide(axel_t *axel);
 #if WIN32
-static int is_readytoread(axel_t *axel, SOCKET fd, WSAEVENT hEventObject);
+static int is_readable(axel_t *axel, SOCKET fd, WSAEVENT hEventObject);
 #endif
 
 static char *buffer = NULL;
@@ -55,12 +55,21 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 #ifdef DEBUG
         printf("WSAStartup error\n");
 #endif
+        return NULL;
     }
 #endif
 	axel = malloc(sizeof(axel_t));
+    if (NULL == axel) 
+    {
+        return NULL;
+    }
 	memset(axel, 0, sizeof(axel_t));
 	*axel->conf = *conf;
 	axel->conn = malloc(sizeof(conn_t) * axel->conf->num_connections);
+    if (NULL == axel->conn) 
+    {
+        return NULL;
+    }
 	memset(axel->conn, 0, sizeof(conn_t) * axel->conf->num_connections);
 	if (0 < axel->conf->max_speed)
 	{
@@ -77,11 +86,18 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 	if (NULL == buffer) 
 	{
 		buffer = malloc(max(MAX_STRING, axel->conf->buffer_size));
-	}
-	
+        if (NULL == buffer) 
+        {
+            return NULL;
+        }
+	}	
 	if (0 == count)
 	{
 		axel->url = malloc(sizeof(url_t));
+        if (NULL == axel->url) 
+        {
+            return NULL;
+        }
 		axel->url->next = axel->url;
 		strncpy(axel->url->text, (char *)url, MAX_STRING);
 	}
@@ -354,30 +370,7 @@ void axel_start(axel_t *axel)
 }
 
 #if WIN32
-/* TODO: remove ^M char from buffer, ^M is CTRL-V CTRL-M */
-static void remove_ctrlm(char *des, char *ori) 
-{
-	int i;
-	for (i = 0; i < strlen(ori); i++) 
-	{
-		if (22 == ori[i]) 
-		{
-			des[i] = 32;
-		} 
-		else if (13 == ori[i]) 
-		{
-			des[i] = 32;
-		} 
-		else 
-		{
-			des[i] = ori[i];
-		}
-	}
-}
-#endif
-
-#if WIN32
-static int is_readytoread(axel_t *axel, SOCKET fd, WSAEVENT hEventObject) 
+static int is_readable(axel_t *axel, SOCKET fd, WSAEVENT hEventObject) 
 {
 	if (1 == axel->conf->num_connections) 
 	{
@@ -395,7 +388,7 @@ static int is_readytoread(axel_t *axel, SOCKET fd, WSAEVENT hEventObject)
 void axel_do(axel_t *axel)
 {
 #if WIN32
-	WSAEVENT hEventObject;
+	WSAEVENT hEventObject = WSACreateEvent();
 	DWORD byte;
 #else
 	fd_set fds[1];
@@ -412,9 +405,8 @@ void axel_do(axel_t *axel)
 		axel->next_state = gettime() + axel->conf->save_state_interval;
 	}
 
-#if !WIN32
 	/* Wait for data on (one of) the connections */
-	hifd = axel->conf->num_connections;
+#if !WIN32
 	FD_ZERO(fds);
 	hifd = 0;
 	for (i = 0; i < axel->conf->num_connections; i++)
@@ -455,8 +447,7 @@ void axel_do(axel_t *axel)
 		if (axel->conn[i].enabled) 
 		{
 #if WIN32
-			hEventObject = WSACreateEvent();
-			if (1 == is_readytoread(axel, axel->conn[i].fd, hEventObject))
+			if (is_readable(axel, axel->conn[i].fd, hEventObject))
 #else
 			if (FD_ISSET(axel->conn[i].fd, fds))
 #endif
@@ -474,11 +465,13 @@ void axel_do(axel_t *axel)
 				if (-1 == size)
 #endif
 				{
+#if !WIN32
 					if (axel->conf->verbose)
 					{
 						axel_message( axel, _("Error on connection %i! "
 							"Connection closed"), i );
 					}
+#endif
 					axel->conn[i].enabled = 0;
 					conn_disconnect(&axel->conn[i]);
 					continue;
@@ -514,7 +507,7 @@ void axel_do(axel_t *axel)
 						axel_message(axel, _("Connection %i finished"), i);
 					}
 					axel->conn[i].enabled = 0;
-					conn_disconnect( &axel->conn[i] );
+					conn_disconnect(&axel->conn[i]);
 					size = remaining;
 					/* Don't terminate, still stuff to write!	*/
 				}
@@ -546,9 +539,6 @@ void axel_do(axel_t *axel)
 					axel->conn[i].enabled = 0;
 				}
 			}
-#if WIN32
-			WSACloseEvent(hEventObject);
-#endif
 		}
 	}
 	if (axel->ready) 
@@ -560,13 +550,15 @@ conn_check:
 	/* Look for aborted connections and attempt to restart them. */
 	for (i = 0; i < axel->conf->num_connections; i++)
 	{
-		if (!axel->conn[i].enabled && axel->conn[i].currentbyte < axel->conn[i].lastbyte)
+		if (!axel->conn[i].enabled 
+            && axel->conn[i].currentbyte < axel->conn[i].lastbyte)
 		{
-			if (axel->conn[i].state == 0)
+			if (0 == axel->conn[i].state)
 			{	
 				// Wait for termination of this thread
 #if WIN32
 				WaitForSingleObject(axel->conn[i].setup_thread, INFINITE);
+				CloseHandle(axel->conn[i].setup_thread);
 #else
 				pthread_join(*(axel->conn[i].setup_thread), NULL);
 #endif	
@@ -616,13 +608,14 @@ conn_check:
 
 	/* Check speed. If too high, delay for some time to slow things
 	   down a bit. I think a 5% deviation should be acceptable.	*/
-	if (axel->conf->max_speed > 0)
+	if (0 < axel->conf->max_speed)
 	{
-		if ((float) axel->bytes_per_second / axel->conf->max_speed > 1.05) 
+		if (1.05 < (float) axel->bytes_per_second / axel->conf->max_speed) 
 		{
 			axel->delay_time += 10000;
 		}
-		else if (((float)axel->bytes_per_second / axel->conf->max_speed < 0.95) && (axel->delay_time >= 10000)) 
+		else if (((float)axel->bytes_per_second / axel->conf->max_speed < 0.95) 
+            && 10000 <= (axel->delay_time)) 
 		{
 			axel->delay_time -= 10000;
 		}
@@ -664,7 +657,7 @@ void axel_close(axel_t *axel)
 	}
 	
 	/* Delete state file if necessary */
-	if (axel->ready == 1)
+	if (1 == axel->ready)
 	{
 		snprintf(buffer, MAX_STRING, "%s.st", axel->filename);
 		unlink(buffer);
@@ -719,7 +712,13 @@ double gettime()
 /* Save the state of the current download				*/
 void save_state(axel_t *axel)
 {
-	int fd, i;
+#if WIN32
+	HANDLE fd;
+	DWORD byte;
+#else
+	int fd;
+#endif
+	int i;
 	char fn[MAX_STRING + 4];
 
 	/* No use for such a file if the server doesn't support
@@ -730,17 +729,35 @@ void save_state(axel_t *axel)
 	}
 	
 	snprintf(fn, MAX_STRING, "%s.st", axel->filename);
+#if WIN32
+	if (INVALID_HANDLE_VALUE == (fd = CreateFile(fn, 
+		GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_NEW | TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)))
+#else
 	if ((fd = open(fn, O_CREAT | O_TRUNC | O_WRONLY, 0666)) == -1)
+#endif
 	{
 		return;		/* Not 100% fatal..			*/
 	}
+#if WIN32
+	WriteFile(fd, &axel->conf->num_connections, sizeof(axel->conf->num_connections), &byte, NULL);
+	WriteFile(fd, &axel->bytes_done, sizeof(axel->bytes_done), &byte, NULL);
+#else
 	write(fd, &axel->conf->num_connections, sizeof(axel->conf->num_connections));
 	write(fd, &axel->bytes_done, sizeof(axel->bytes_done));
+#endif
 	for (i = 0; i < axel->conf->num_connections; i++)
 	{
+#if WIN32
+		WriteFile(fd, &axel->conn[i].currentbyte, sizeof(axel->conn[i].currentbyte), &byte, NULL);
+#else
 		write(fd, &axel->conn[i].currentbyte, sizeof(axel->conn[i].currentbyte));
+#endif
 	}
+#if WIN32
+	CloseHandle(fd);
+#else
 	close(fd);
+#endif
 }
 
 /* Thread used to set up a connection */
@@ -780,7 +797,7 @@ void *setup_thread_cb( void *c )
 #if WIN32
 	return 0;
 #else
-	return( NULL );
+	return NULL;
 #endif
 }
 
@@ -795,13 +812,13 @@ static void axel_message(axel_t *axel, char *format, ...)
 	vsnprintf(m->text, MAX_STRING, format, params);
 	va_end(params);
 	
-	if (axel->message == NULL)
+	if (NULL == axel->message)
 	{
 		axel->message = m;
 	}
 	else
 	{
-		while (n->next != NULL) 
+		while (NULL != n->next) 
 		{
 			n = n->next;
 		}
@@ -819,13 +836,15 @@ static void axel_divide(axel_t *axel)
 	for (i = 1; i < axel->conf->num_connections; i++)
 	{
 #ifdef DEBUG
-		printf("Downloading %lld-%lld using conn. %i\n", axel->conn[i - 1].currentbyte, axel->conn[i - 1].lastbyte, i - 1);
+		printf("Downloading %lld-%lld using conn. %i\n", 
+            axel->conn[i - 1].currentbyte, axel->conn[i - 1].lastbyte, i - 1);
 #endif
 		axel->conn[i].currentbyte = axel->conn[i - 1].lastbyte + 1;
 		axel->conn[i].lastbyte = axel->conn[i].currentbyte + axel->size / axel->conf->num_connections;
 	}
 	axel->conn[axel->conf->num_connections - 1].lastbyte = axel->size - 1;
 #ifdef DEBUG
-	printf("Downloading %lld-%lld using conn. %i\n", axel->conn[i - 1].currentbyte, axel->conn[i - 1].lastbyte, i - 1 );
+	printf("Downloading %lld-%lld using conn. %i\n", 
+        axel->conn[i - 1].currentbyte, axel->conn[i - 1].lastbyte, i - 1);
 #endif
 }

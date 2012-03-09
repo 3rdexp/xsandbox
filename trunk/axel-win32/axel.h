@@ -123,7 +123,11 @@ typedef struct
 	long long bytes_done, start_byte, size;
 	int bytes_per_second;
 	int delay_time;
+#if WIN32
+	HANDLE outfd;
+#else
 	int outfd;
+#endif
 	int ready;
 	message_t *message;
 	url_t *url;

@@ -95,7 +95,7 @@ int main( int argc, char *argv[] )
 #endif
 	
 	j = -1;
-	conf->num_connections = NUM_CONN;
+	conf->num_connections = argv[1] ? atoi(argv[1]) : NUM_CONN;
 #if !WIN32
 	while( 1 )
 	{
@@ -269,7 +269,7 @@ int main( int argc, char *argv[] )
 		free( s );
 	}
 #else
-	axel = axel_new(conf, 0, argv[1] ? argv[1] : "http://localhost");
+	axel = axel_new(conf, 0, argv[2] ? argv[2] : "http://localhost");
 	if( axel->ready == -1 )
 	{
 		print_messages( axel );
