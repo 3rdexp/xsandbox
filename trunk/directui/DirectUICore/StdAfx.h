@@ -8,8 +8,11 @@
 
 #pragma once
 
+#include "config.h"
+
 #ifdef __GNUC__
 // 怎么都没找到min，max的头文件-_-
+// in the /usr/include/sys/param.h header file
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
@@ -48,6 +51,10 @@
 #define MAX max
 #define MIN min
 #define CLAMP(x,a,b) (MIN(b,MAX(a,x)))
+
+#ifdef ENABLE_DIRECTX
+#include "Internal.h"
+#endif
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

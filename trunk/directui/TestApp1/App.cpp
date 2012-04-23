@@ -13,9 +13,11 @@ public:
 
     void Init() { }
 
-    bool OnHChanged(void* param) {
+    bool OnHChanged(void* param) 
+	{
         TNotifyUI* pMsg = (TNotifyUI*)param;
-        if( pMsg->sType == _T("valuechanged") ) {
+        if (_T("valuechanged") == pMsg->sType) 
+		{
             short H, S, L;
             CPaintManagerUI::GetHSL(&H, &S, &L);
             CPaintManagerUI::SetHSL(true, (static_cast<CSliderUI*>(pMsg->pSender))->GetValue(), S, L);
@@ -23,9 +25,11 @@ public:
         return true;
     }
 
-    bool OnSChanged(void* param) {
+    bool OnSChanged(void* param) 
+	{
         TNotifyUI* pMsg = (TNotifyUI*)param;
-        if( pMsg->sType == _T("valuechanged") ) {
+        if (_T("valuechanged") == pMsg->sType) 
+		{
             short H, S, L;
             CPaintManagerUI::GetHSL(&H, &S, &L);
             CPaintManagerUI::SetHSL(true, H, (static_cast<CSliderUI*>(pMsg->pSender))->GetValue(), L);
@@ -54,13 +58,16 @@ public:
     void OnPrepare() 
     {
         CSliderUI* pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("alpha_controlor")));
-        if( pSilder ) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnAlphaChanged);
-        pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("h_controlor")));
-        if( pSilder ) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnHChanged);
-        pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("s_controlor")));
-        if( pSilder ) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnSChanged);
-        pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("l_controlor")));
-        if( pSilder ) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnLChanged);
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnAlphaChanged);
+        
+		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("h_controlor")));
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnHChanged);
+        
+		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("s_controlor")));
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnSChanged);
+        
+		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("l_controlor")));
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnLChanged);
     }
 
     void Notify(TNotifyUI& msg)
@@ -121,7 +128,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*l
 
     CFrameWindowWnd* pFrame = new CFrameWindowWnd();
     if( pFrame == NULL ) return 0;
-    pFrame->Create(NULL, _T("这是一个最简单的测试用exe，修改test1.xml就可以看到效果"), UI_WNDSTYLE_FRAME, WS_EX_WINDOWEDGE);
+    pFrame->Create(NULL, _T("TestApp1"), UI_WNDSTYLE_FRAME, WS_EX_WINDOWEDGE);
     pFrame->CenterWindow();
     pFrame->ShowWindow(true);
     CPaintManagerUI::MessageLoop();
