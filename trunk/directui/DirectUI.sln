@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectUICore", "DirectUICore\DirectUICore.vcproj", "{D9388367-B301-49D3-AF8D-4FF9878FFEB4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestApp1", "TestApp1\TestApp1.vcproj", "{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{D9388367-B301-49D3-AF8D-4FF9878FFEB4}.Debug|Win32.Build.0 = Debug|Win32
 		{D9388367-B301-49D3-AF8D-4FF9878FFEB4}.Release|Win32.ActiveCfg = Release|Win32
 		{D9388367-B301-49D3-AF8D-4FF9878FFEB4}.Release|Win32.Build.0 = Release|Win32
+		{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}.Debug|Win32.Build.0 = Debug|Win32
+		{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}.Release|Win32.ActiveCfg = Release|Win32
+		{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
