@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include <textserv.h>
+
+#pragma comment(lib, "riched20.lib")
+
 // These constants are for backward compatibility. They are the 
 // sizes used for initialization and reset in RichEdit 1.0
 
@@ -28,8 +32,6 @@ EXTERN_C const IID IID_ITextHost = { /* c5bdd8d0-d26e-11ce-a89e-00aa006cadc5 */
 #ifndef HIMETRIC_PER_INCH
 #define HIMETRIC_PER_INCH 2540
 #endif
-
-#include <textserv.h>
 
 class CTxtWinHost : public ITextHost
 {

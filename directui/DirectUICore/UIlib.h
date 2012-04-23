@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2011, DirectUICore develop team(www.DirectUICore.com).
+// Copyright (c) 2010-2011, duilib develop team(www.duilib.com).
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or 
@@ -52,6 +52,7 @@
 #include <malloc.h>
 
 #include "UIBase.h"
+#include "UIAnim.h"
 #include "UIManager.h"
 #include "UIDelegate.h"
 #include "UIControl.h"
