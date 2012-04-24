@@ -1,0 +1,237 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--------------------------------------------------------------------------->  
+<!--                           INTRODUCTION                                
+
+ The Code Project article submission template (HTML version)
+
+Using this template will help us post your article sooner. To use, just 
+follow the 3 easy steps below:
+ 
+     1. Fill in the article description details
+     2. Add links to your images and downloads
+     3. Include the main article text
+
+That's all there is to it! All formatting will be done by our submission
+scripts and style sheets. 
+
+-->  
+<!--------------------------------------------------------------------------->  
+<!--                        IGNORE THIS SECTION                            -->
+<html>
+<head>
+<title>The Code Project</title>
+<Style>
+BODY, P, TD { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10pt }
+H2,H3,H4,H5 { color: #ff9900; font-weight: bold; }
+H2 { font-size: 13pt; }
+H3 { font-size: 12pt; }
+H4 { font-size: 10pt; color: black; }
+PRE { BACKGROUND-COLOR: #FBEDBB; FONT-FAMILY: "Courier New", Courier, mono; WHITE-SPACE: pre; }
+CODE { COLOR: #990000; FONT-FAMILY: "Courier New", Courier, mono; }
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.codeproject.com/App_Themes/NetCommunity/CodeProject.css">
+</head>
+<body bgcolor="#FFFFFF" color=#000000>
+<!--------------------------------------------------------------------------->  
+
+
+<!-------------------------------     STEP 1      --------------------------->
+<!--  Fill in the details (CodeProject will reformat this section for you) -->
+
+<pre>
+Title:       Hello DirectUI
+Author:      Xiang Zhai
+Email:       xiangzhai83@gmail.com
+Language:    VC/C++
+Platform:    Windows
+Technology:  WIN32, DirectX
+Level:       Intermediate
+Description: Windowless presentation manager library with DirectX anmiation
+Section      Libraries
+SubSection   General
+License:     GPL v2
+</pre>
+
+<!-------------------------------     STEP 2      --------------------------->
+<!--  Include download and sample image information.                       --> 
+
+<ul>
+<li><a href="http://xsandbox.googlecode.com/svn/trunk/directui/">DirectUI SVN</a></li>
+</ul>
+
+<!-------------------------------     STEP 3      --------------------------->
+
+<!--  Add the article text. Please use simple formatting (<h2>, <p> etc)   -->
+
+<h2>Introduction</h2>
+
+<p>Recently I chatted with my university classmate, he asked me choosing which library to develop the GUI, I said using MFC for VC++, WinForm for C#, Gtk for Linux. Then he passionatly introduced DirectUI using XML to describe the GUI, skinning with bmp/jpg/png, animating based on DirectX. Actrualy it is smiliar with Linux toolchain Glade, Cairo, OpenGL and Gtk.</p>
+
+<h2>Background</h2>
+
+<p>When I google with DirectUI keyword, it often shown some commercial products, but I really want to find out some open source libraries. Fortunatly it is on the Bjarke Viksoe personal website http://www.viksoe.dk/code/windowless1.htm and the extended version http://code.google.com/p/duilib</p>
+<p>I checked out the extended version source code, it added alpha rendering support and some other cool features, but it removed 3D animation via DirectX. So what I did simply added animation developed by Bjarke Viksoe back to the extended version.</p>
+
+<h2>Using the code</h2>
+
+<p>TestApp1 is a good test case better than Hello World stuff. WinMain is the main entry point.</p>
+
+<pre>
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int nCmdShow)
+{
+    CPaintManagerUI::SetInstance(hInstance);
+    CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath());
+
+    HRESULT Hr = ::CoInitialize(NULL);
+    if (FAILED(Hr)) return 0;
+
+    CFrameWindowWnd* pFrame = new CFrameWindowWnd();
+    if (NULL == pFrame) return 0;
+    pFrame->Create(NULL, _T("TestApp1"), UI_WNDSTYLE_FRAME, WS_EX_WINDOWEDGE);
+    pFrame->CenterWindow();
+    pFrame->ShowWindow(true);
+    CPaintManagerUI::MessageLoop();
+
+    ::CoUninitialize();
+    return 0;
+}
+</pre>
+
+<p>CFrameWindowWnd is the major class object.</p>
+<p>WM_CREATE in the HandleMessage use test1.xml to describe the GUI.</p>
+<p>windowinit in the Notify call OnPrepare to add delegate routine for some slider controls</p>
+<p>AddAnimJob in the OnPrepare adding 3D animation cool effect</p>
+
+<pre>
+class CFrameWindowWnd : public CWindowWnd, public INotifyUI
+{
+public:
+    CFrameWindowWnd() { };
+    LPCTSTR GetWindowClassName() const { return _T("UIMainFrame"); };
+    UINT GetClassStyle() const { return UI_CLASSSTYLE_FRAME | CS_DBLCLKS; };
+    void OnFinalMessage(HWND /*hWnd*/) { delete this; };
+
+    void Init() { }
+
+    bool OnHChanged(void* param) 
+	{
+        TNotifyUI* pMsg = (TNotifyUI*)param;
+        if (_T("valuechanged") == pMsg->sType) 
+		{
+            short H, S, L;
+            CPaintManagerUI::GetHSL(&H, &S, &L);
+            CPaintManagerUI::SetHSL(true, (static_cast<CSliderUI*>(pMsg->pSender))->GetValue(), S, L);
+        }
+        return true;
+    }
+
+    bool OnSChanged(void* param) 
+	{
+        TNotifyUI* pMsg = (TNotifyUI*)param;
+        if (_T("valuechanged") == pMsg->sType) 
+		{
+            short H, S, L;
+            CPaintManagerUI::GetHSL(&H, &S, &L);
+            CPaintManagerUI::SetHSL(true, H, (static_cast<CSliderUI*>(pMsg->pSender))->GetValue(), L);
+        }
+        return true;
+    }
+
+    bool OnLChanged(void* param) {
+        TNotifyUI* pMsg = (TNotifyUI*)param;
+        if( pMsg->sType == _T("valuechanged") ) {
+            short H, S, L;
+            CPaintManagerUI::GetHSL(&H, &S, &L);
+            CPaintManagerUI::SetHSL(true, H, S, (static_cast<CSliderUI*>(pMsg->pSender))->GetValue());
+        }
+        return true;
+    }
+
+    bool OnAlphaChanged(void* param) {
+        TNotifyUI* pMsg = (TNotifyUI*)param;
+        if( pMsg->sType == _T("valuechanged") ) {
+            m_pm.SetTransparent((static_cast<CSliderUI*>(pMsg->pSender))->GetValue());
+        }
+        return true;
+    }
+
+    void OnPrepare() 
+    {
+        CSliderUI* pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("alpha_controlor")));
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnAlphaChanged);
+        
+		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("h_controlor")));
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnHChanged);
+        
+		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("s_controlor")));
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnSChanged);
+        
+		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("l_controlor")));
+        if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnLChanged);
+
+		COLORREF clrBack = RGB(0, 0, 0);
+		RECT rcCtrl = m_pm.FindControl(_T("changeskinbtn"))->GetPos();
+		m_pm.AddAnimJob(CAnimJobUI(UIANIMTYPE_FLAT, 0, 350, clrBack, clrBack, CRect(rcCtrl.left, rcCtrl.top, rcCtrl.left + 50, rcCtrl.top + 50), 40, 0, 4, 255, 0.3f));
+    }
+
+    void Notify(TNotifyUI& msg)
+    {
+        if( msg.sType == _T("windowinit") ) OnPrepare();
+        else if( msg.sType == _T("click") ) {
+            if( msg.pSender->GetName() == _T("insertimagebtn") ) {
+                CRichEditUI* pRich = static_cast<CRichEditUI*>(m_pm.FindControl(_T("testrichedit")));
+                if( pRich ) {
+                    pRich->RemoveAll();
+                }
+            }
+            else if( msg.pSender->GetName() == _T("changeskinbtn") ) {
+                if( CPaintManagerUI::GetResourcePath() == CPaintManagerUI::GetInstancePath() )
+                    CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath() + _T("skin\\FlashRes"));
+                else
+                    CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath());
+                CPaintManagerUI::ReloadSkin();
+            }
+        }
+    }
+
+    LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        if( uMsg == WM_CREATE ) {
+            m_pm.Init(m_hWnd);
+            CDialogBuilder builder;
+            CControlUI* pRoot = builder.Create(_T("test1.xml"), (UINT)0, NULL, &m_pm);
+            ASSERT(pRoot && "Failed to parse XML");
+            m_pm.AttachDialog(pRoot);
+            m_pm.AddNotifier(this);
+            Init();
+            return 0;
+        }
+        else if( uMsg == WM_DESTROY ) {
+            ::PostQuitMessage(0L);
+        }
+        else if( uMsg == WM_ERASEBKGND ) {
+            return 1;
+        }
+        LRESULT lRes = 0;
+        if( m_pm.MessageHandler(uMsg, wParam, lParam, lRes) ) return lRes;
+        return CWindowWnd::HandleMessage(uMsg, wParam, lParam);
+    }
+
+public:
+    CPaintManagerUI m_pm;
+};
+</pre>
+
+<h2>Points of Interest</h2>
+
+<p>DirectUI developed by Bjarke Viksoe is an outstanding open source project, so it is happy to read the source code :)</p>
+
+<h2>History</h2>
+
+<p>2012-04-24 Added 3D animation via DirectX developed by Bjarke Viksoe</p>
+
+<!-------------------------------    That's it!   --------------------------->
+</body>
+
+</html>
+
