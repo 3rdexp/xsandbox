@@ -292,6 +292,8 @@ public:
     bool AddMessageFilter(IMessageFilterUI* pFilter);
     bool RemoveMessageFilter(IMessageFilterUI* pFilter);
 
+	bool AddAnimJob(const CAnimJobUI& job);
+
     int GetPostPaintCount() const;
     bool AddPostPaint(CControlUI* pControl);
     bool RemovePostPaint(CControlUI* pControl);
