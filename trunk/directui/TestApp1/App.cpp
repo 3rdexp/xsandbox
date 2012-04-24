@@ -68,6 +68,10 @@ public:
         
 		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("l_controlor")));
         if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnLChanged);
+
+		COLORREF clrBack = RGB(0, 0, 0);
+		RECT rcCtrl = m_pm.FindControl(_T("changeskinbtn"))->GetPos();
+		m_pm.AddAnimJob(CAnimJobUI(UIANIMTYPE_FLAT, 0, 350, clrBack, clrBack, CRect(rcCtrl.left, rcCtrl.top, rcCtrl.left + 50, rcCtrl.top + 50), 40, 0, 4, 255, 0.3f));
     }
 
     void Notify(TNotifyUI& msg)

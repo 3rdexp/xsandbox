@@ -51,6 +51,7 @@ typedef struct tagTIMERINFO
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+CAnimationSpooler m_anim;
 HPEN m_hUpdateRectPen = NULL;
 HINSTANCE CPaintManagerUI::m_hInstance = NULL;
 HINSTANCE CPaintManagerUI::m_hResourceInstance = NULL;
@@ -511,8 +512,8 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 //    }
 //#endif
     // Not ready yet?
-    if( m_hWndPaint == NULL ) return false;
-    
+    if (NULL == m_hWndPaint) return false;
+    int i;
     TNotifyUI* pMsg = NULL;
     while( pMsg = static_cast<TNotifyUI*>(m_aAsyncNotify.GetAt(0)) ) {
         m_aAsyncNotify.Remove(0);
@@ -622,72 +623,104 @@ bool CPaintManagerUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
                 }
             }
             // Set focus to first control?
-            if( m_bFocusNeeded ) {
+            if (m_bFocusNeeded) 
+			{
                 SetNextTabControl();
             }
             //
             // Render screen
             //
-            // Prepare offscreen bitmap?
-            if( m_bOffscreenPaint && m_hbmpOffscreen == NULL )
-            {
-                RECT rcClient = { 0 };
-                ::GetClientRect(m_hWndPaint, &rcClient);
-                m_hDcOffscreen = ::CreateCompatibleDC(m_hDcPaint);
-                m_hbmpOffscreen = ::CreateCompatibleBitmap(m_hDcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top); 
-                ASSERT(m_hDcOffscreen);
-                ASSERT(m_hbmpOffscreen);
-            }
-            // Begin Windows paint
-            PAINTSTRUCT ps = { 0 };
-            ::BeginPaint(m_hWndPaint, &ps);
-            if( m_bOffscreenPaint )
-            {
-                HBITMAP hOldBitmap = (HBITMAP) ::SelectObject(m_hDcOffscreen, m_hbmpOffscreen);
-                int iSaveDC = ::SaveDC(m_hDcOffscreen);
-                if( m_bAlphaBackground ) {
-                    if( m_hbmpBackground == NULL ) {
-                        RECT rcClient = { 0 };
-                        ::GetClientRect(m_hWndPaint, &rcClient);
-                        m_hDcBackground = ::CreateCompatibleDC(m_hDcPaint);;
-                        m_hbmpBackground = ::CreateCompatibleBitmap(m_hDcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top); 
-                        ASSERT(m_hDcBackground);
-                        ASSERT(m_hbmpBackground);
-                        ::SelectObject(m_hDcBackground, m_hbmpBackground);
-                        ::BitBlt(m_hDcBackground, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left,
-                            ps.rcPaint.bottom - ps.rcPaint.top, ps.hdc, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
-                    }
-                    else
-                        ::SelectObject(m_hDcBackground, m_hbmpBackground);
-                    ::BitBlt(m_hDcOffscreen, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left,
-                        ps.rcPaint.bottom - ps.rcPaint.top, m_hDcBackground, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
-                }
-                m_pRoot->DoPaint(m_hDcOffscreen, ps.rcPaint);
-                for( int i = 0; i < m_aPostPaintControls.GetSize(); i++ ) {
-                    CControlUI* pPostPaintControl = static_cast<CControlUI*>(m_aPostPaintControls[i]);
-                    pPostPaintControl->DoPostPaint(m_hDcOffscreen, ps.rcPaint);
-                }
-                ::RestoreDC(m_hDcOffscreen, iSaveDC);
-                ::BitBlt(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left,
-                    ps.rcPaint.bottom - ps.rcPaint.top, m_hDcOffscreen, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
-                ::SelectObject(m_hDcOffscreen, hOldBitmap);
+			if (m_anim.IsAnimating())
+			{
+				// 3D animation in progress
+				m_anim.Render();
+				// Do a minimum paint loop
+				// Keep the client area invalid so we generate lots of
+				// WM_PAINT messages. Cross fingers that Windows doesn't
+				// batch these somehow in the future.
+				PAINTSTRUCT ps = { 0 };
+				::BeginPaint(m_hWndPaint, &ps);
+				::EndPaint(m_hWndPaint, &ps);
+				::InvalidateRect(m_hWndPaint, NULL, FALSE);
+			}
+			else if (m_anim.IsJobScheduled()) 
+			{
+				// Animation system needs to be initialized
+				m_anim.Init(m_hWndPaint);
+				// A 3D animation was scheduled; allow the render engine to
+				// capture the window content and repaint some other time
+				if (!m_anim.PrepareAnimation(m_hWndPaint)) m_anim.CancelJobs();
+				::InvalidateRect(m_hWndPaint, NULL, TRUE);
+			} 
+			else 
+			{
+				// Prepare offscreen bitmap?
+				if (m_bOffscreenPaint && NULL == m_hbmpOffscreen)
+				{
+					RECT rcClient = { 0 };
+					::GetClientRect(m_hWndPaint, &rcClient);
+					m_hDcOffscreen = ::CreateCompatibleDC(m_hDcPaint);
+					m_hbmpOffscreen = ::CreateCompatibleBitmap(m_hDcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top); 
+					ASSERT(m_hDcOffscreen);
+					ASSERT(m_hbmpOffscreen);
+				}
+				// Begin Windows paint
+				PAINTSTRUCT ps = { 0 };
+				::BeginPaint(m_hWndPaint, &ps);
+				if (m_bOffscreenPaint)
+				{
+					HBITMAP hOldBitmap = (HBITMAP) ::SelectObject(m_hDcOffscreen, m_hbmpOffscreen);
+					int iSaveDC = ::SaveDC(m_hDcOffscreen);
+					if (m_bAlphaBackground) 
+					{
+						if (NULL == m_hbmpBackground) 
+						{
+							RECT rcClient = { 0 };
+							::GetClientRect(m_hWndPaint, &rcClient);
+							m_hDcBackground = ::CreateCompatibleDC(m_hDcPaint);;
+							m_hbmpBackground = ::CreateCompatibleBitmap(m_hDcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top); 
+							ASSERT(m_hDcBackground);
+							ASSERT(m_hbmpBackground);
+							::SelectObject(m_hDcBackground, m_hbmpBackground);
+							::BitBlt(m_hDcBackground, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left,
+								ps.rcPaint.bottom - ps.rcPaint.top, ps.hdc, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
+						}
+						else 
+						{
+							::SelectObject(m_hDcBackground, m_hbmpBackground);
+						}
+						::BitBlt(m_hDcOffscreen, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left,
+							ps.rcPaint.bottom - ps.rcPaint.top, m_hDcBackground, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
+					}
+					m_pRoot->DoPaint(m_hDcOffscreen, ps.rcPaint);
+					for (i = 0; i < m_aPostPaintControls.GetSize(); i++) 
+					{
+						CControlUI* pPostPaintControl = static_cast<CControlUI*>(m_aPostPaintControls[i]);
+						pPostPaintControl->DoPostPaint(m_hDcOffscreen, ps.rcPaint);
+					}
+					::RestoreDC(m_hDcOffscreen, iSaveDC);
+					::BitBlt(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left,
+						ps.rcPaint.bottom - ps.rcPaint.top, m_hDcOffscreen, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
+					::SelectObject(m_hDcOffscreen, hOldBitmap);
 
-                if( m_bShowUpdateRect ) {
-                    HPEN hOldPen = (HPEN)::SelectObject(ps.hdc, m_hUpdateRectPen);
-                    ::SelectObject(ps.hdc, ::GetStockObject(HOLLOW_BRUSH));
-                    ::Rectangle(ps.hdc, rcPaint.left, rcPaint.top, rcPaint.right, rcPaint.bottom);
-                    ::SelectObject(ps.hdc, hOldPen);
-                }
-            }
-            else
-            {
-                // A standard paint job
-                int iSaveDC = ::SaveDC(ps.hdc);
-                m_pRoot->DoPaint(ps.hdc, ps.rcPaint);
-                ::RestoreDC(ps.hdc, iSaveDC);
-            }
-            // All Done!
-            ::EndPaint(m_hWndPaint, &ps);
+					if (m_bShowUpdateRect) 
+					{
+						HPEN hOldPen = (HPEN)::SelectObject(ps.hdc, m_hUpdateRectPen);
+						::SelectObject(ps.hdc, ::GetStockObject(HOLLOW_BRUSH));
+						::Rectangle(ps.hdc, rcPaint.left, rcPaint.top, rcPaint.right, rcPaint.bottom);
+						::SelectObject(ps.hdc, hOldPen);
+					}
+				}
+				else
+				{
+					// A standard paint job
+					int iSaveDC = ::SaveDC(ps.hdc);
+					m_pRoot->DoPaint(ps.hdc, ps.rcPaint);
+					::RestoreDC(ps.hdc, iSaveDC);
+				}
+				// All Done!
+				::EndPaint(m_hWndPaint, &ps);
+			}
         }
         // If any of the painting requested a resize again, we'll need
         // to invalidate the entire window once more.
@@ -1455,6 +1488,14 @@ bool CPaintManagerUI::AddMessageFilter(IMessageFilterUI* pFilter)
 {
     ASSERT(m_aMessageFilters.Find(pFilter)<0);
     return m_aMessageFilters.Add(pFilter);
+}
+
+bool CPaintManagerUI::AddAnimJob(const CAnimJobUI& job)
+{
+   CAnimJobUI* pJob = new CAnimJobUI(job);
+   if( pJob == NULL ) return false;
+   ::InvalidateRect(m_hWndPaint, NULL, FALSE);
+   return m_anim.AddJob(pJob);
 }
 
 bool CPaintManagerUI::RemoveMessageFilter(IMessageFilterUI* pFilter)
