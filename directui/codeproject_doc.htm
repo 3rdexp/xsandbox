@@ -39,16 +39,16 @@ CODE { COLOR: #990000; FONT-FAMILY: "Courier New", Courier, mono; }
 <!--  Fill in the details (CodeProject will reformat this section for you) -->
 
 <pre>
-Title:       Hello DirectUI
+Title:       DirectUI
 Author:      Xiang Zhai
 Email:       xiangzhai83@gmail.com
-Language:    VC/C++
+Language:    VC++
 Platform:    Windows
 Technology:  WIN32, DirectX
 Level:       Intermediate
-Description: Windowless presentation manager library with DirectX anmiation
-Section      Libraries
-SubSection   General
+Description: Open source windowless presentation manager library with DirectX 3D anmiation
+Section      Windows Presentation Foundation
+SubSection   Libraries
 License:     GPL v2
 </pre>
 
@@ -56,7 +56,7 @@ License:     GPL v2
 <!--  Include download and sample image information.                       --> 
 
 <ul>
-<li><a href="http://xsandbox.googlecode.com/svn/trunk/directui/">DirectUI SVN</a></li>
+<li><a href="http://xsandbox.googlecode.com/svn/trunk/directui/">DirectUI Souce Code Version Control</a></li>
 </ul>
 
 <!-------------------------------     STEP 3      --------------------------->
@@ -65,16 +65,23 @@ License:     GPL v2
 
 <h2>Introduction</h2>
 
-<p>Recently I chatted with my university classmate, he asked me choosing which library to develop the GUI, I said using MFC for VC++, WinForm for C#, Gtk for Linux. Then he passionatly introduced DirectUI using XML to describe the GUI, skinning with bmp/jpg/png, animating based on DirectX. Actrualy it is smiliar with Linux toolchain Glade, Cairo, OpenGL and Gtk.</p>
+<p>Recently I chatted with my university classmate, he asked me choosing which library to develop GUI, I said using MFC for VC++, WinForm for C#, and Gtk for Linux. Then he passionatly introduced DirectUI to me, a windowless presentation manager using XML to describe GUI, skinning with bmp/jpg/png, animating based on DirectX. Actrualy it is smiliar with Linux GUI toolchain <a href="http://glade.gnome.org">Glade</a> (based on XML), <a href="http://www.cairographics.org">Cairo</a> (2D graphic library), OpenGL (3D graphic library) and <a href="http://www.gtk.org">Gtk</a>.</p>
 
 <h2>Background</h2>
 
-<p>When I google with DirectUI keyword, it often shown some commercial products, but I really want to find out some open source libraries. Fortunatly it is on the Bjarke Viksoe personal website http://www.viksoe.dk/code/windowless1.htm and the extended version http://code.google.com/p/duilib</p>
-<p>I checked out the extended version source code, it added alpha rendering support and some other cool features, but it removed 3D animation via DirectX. So what I did simply added animation developed by Bjarke Viksoe back to the extended version.</p>
+<p>DirectUI is a C++ user interface library created by Microsoft to be a WPF like API for native applications. <b>It is not released to the public</b> but is being used widely throughout Microsoft products including Windows, Microsoft Office, and Windows Live Messenger.</p>
+<p>So I google with DirectUI keyword, it often shown the commercial products, but I really want to find out some open source libraries. Fortunatly it is on the <a href="http://www.viksoe.dk/code/windowless1.htm">Bjarke Viksoe personal website</a> and the <a href="http://code.google.com/p/duilib">extended version</a>.</p>
+<p>I checked out the <a href="http://duilib.googlecode.com/svn">extended version source code</a>, it added alpha rendering support and some other cool features, but it removed 3D animation based on DirectX. So I simply <a href="http://code.google.com/p/xsandbox/source/detail?r=14">added 3D animation</a> based on DirectX developed by Bjarke Viksoe to the extended version.</p>
 
 <h2>Using the code</h2>
 
-<p>TestApp1 is a good test case better than Hello World stuff. WinMain is the main entry point.</p>
+<p>Due to #define ENABLE_DIRECTX in DirectUICore/config.h, it need to download <a href="http://www.microsoft.com/download/en/details.aspx?id=6812">DirectX SDK</a>.</p>
+<p>Set VC++ diretory for DirectX SDK, <b>for example, in VS 2005`s Tool -> Option... -> Project and solution -> VC++ directory, set DirectX SDK include and lib path.</b></p>
+<p>In the DirectUI source code <a href="http://xsandbox.googlecode.com/svn/trunk/directui/TestApp1">TestApp1</a> is a simple test case better than Hello World stuff.</p>
+<ul>
+<li>WinMain is the main entry point;</li>
+<li>CPaintManagerUI is the Windowless presentation manager;</li>
+</ul>
 
 <pre>
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int nCmdShow)
@@ -97,10 +104,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*l
 }
 </pre>
 
-<p>CFrameWindowWnd is the major class object.</p>
-<p>WM_CREATE in the HandleMessage use test1.xml to describe the GUI.</p>
-<p>windowinit in the Notify call OnPrepare to add delegate routine for some slider controls</p>
-<p>AddAnimJob in the OnPrepare adding 3D animation cool effect</p>
+<ul>
+<li>CFrameWindowWnd is the major class object to show a dialog window;</li>
+<li>WM_CREATE in the HandleMessage use res/test1.xml (<b>it need to copy the files and directories under res/ directory to compiler folder such as bin/Debug</b>) to describe GUI;</li>
+<li>windowinit in the Notify call OnPrepare to add delegate routine for some slider controls;</li>
+<li>AddAnimJob in the OnPrepare adding 3D animation based on DirectX cool effect;</li>
+</ul>
 
 <pre>
 class CFrameWindowWnd : public CWindowWnd, public INotifyUI
@@ -137,9 +146,11 @@ public:
         return true;
     }
 
-    bool OnLChanged(void* param) {
+    bool OnLChanged(void* param) 
+	{
         TNotifyUI* pMsg = (TNotifyUI*)param;
-        if( pMsg->sType == _T("valuechanged") ) {
+        if (_T("valuechanged") == pMsg->sType) 
+		{
             short H, S, L;
             CPaintManagerUI::GetHSL(&H, &S, &L);
             CPaintManagerUI::SetHSL(true, H, S, (static_cast<CSliderUI*>(pMsg->pSender))->GetValue());
@@ -147,9 +158,11 @@ public:
         return true;
     }
 
-    bool OnAlphaChanged(void* param) {
+    bool OnAlphaChanged(void* param) 
+	{
         TNotifyUI* pMsg = (TNotifyUI*)param;
-        if( pMsg->sType == _T("valuechanged") ) {
+        if (_T("valuechanged") == pMsg->sType) 
+		{
             m_pm.SetTransparent((static_cast<CSliderUI*>(pMsg->pSender))->GetValue());
         }
         return true;
@@ -168,7 +181,7 @@ public:
         
 		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("l_controlor")));
         if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnLChanged);
-
+		
 		COLORREF clrBack = RGB(0, 0, 0);
 		RECT rcCtrl = m_pm.FindControl(_T("changeskinbtn"))->GetPos();
 		m_pm.AddAnimJob(CAnimJobUI(UIANIMTYPE_FLAT, 0, 350, clrBack, clrBack, CRect(rcCtrl.left, rcCtrl.top, rcCtrl.left + 50, rcCtrl.top + 50), 40, 0, 4, 255, 0.3f));
@@ -176,16 +189,20 @@ public:
 
     void Notify(TNotifyUI& msg)
     {
-        if( msg.sType == _T("windowinit") ) OnPrepare();
-        else if( msg.sType == _T("click") ) {
-            if( msg.pSender->GetName() == _T("insertimagebtn") ) {
+        if (_T("windowinit") == msg.sType) OnPrepare();
+        else if (_T("click") == msg.sType) 
+		{
+            if (_T("insertimagebtn") == msg.pSender->GetName()) 
+			{
                 CRichEditUI* pRich = static_cast<CRichEditUI*>(m_pm.FindControl(_T("testrichedit")));
-                if( pRich ) {
+                if (pRich) 
+				{
                     pRich->RemoveAll();
                 }
             }
-            else if( msg.pSender->GetName() == _T("changeskinbtn") ) {
-                if( CPaintManagerUI::GetResourcePath() == CPaintManagerUI::GetInstancePath() )
+            else if (_T("changeskinbtn") == msg.pSender->GetName()) 
+			{
+                if (CPaintManagerUI::GetResourcePath() == CPaintManagerUI::GetInstancePath())
                     CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath() + _T("skin\\FlashRes"));
                 else
                     CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath());
@@ -196,7 +213,8 @@ public:
 
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
-        if( uMsg == WM_CREATE ) {
+        if (WM_CREATE == uMsg) 
+		{
             m_pm.Init(m_hWnd);
             CDialogBuilder builder;
             CControlUI* pRoot = builder.Create(_T("test1.xml"), (UINT)0, NULL, &m_pm);
@@ -206,14 +224,16 @@ public:
             Init();
             return 0;
         }
-        else if( uMsg == WM_DESTROY ) {
+        else if (WM_DESTROY == uMsg) 
+		{
             ::PostQuitMessage(0L);
         }
-        else if( uMsg == WM_ERASEBKGND ) {
+        else if (WM_ERASEBKGND == uMsg) 
+		{
             return 1;
         }
         LRESULT lRes = 0;
-        if( m_pm.MessageHandler(uMsg, wParam, lParam, lRes) ) return lRes;
+        if (m_pm.MessageHandler(uMsg, wParam, lParam, lRes)) return lRes;
         return CWindowWnd::HandleMessage(uMsg, wParam, lParam);
     }
 
@@ -224,11 +244,11 @@ public:
 
 <h2>Points of Interest</h2>
 
-<p>DirectUI developed by Bjarke Viksoe is an outstanding open source project, so it is happy to read the source code :)</p>
+<p>DirectUI developed by Bjarke Viksoe is an outstanding open source project, so it is comfortable to read the source code :)</p>
 
 <h2>History</h2>
 
-<p>2012-04-24 Added 3D animation via DirectX developed by Bjarke Viksoe</p>
+<p>2012-04-24 Added 3D animation based on DirectX developed by Bjarke Viksoe to the extended version.</p>
 
 <!-------------------------------    That's it!   --------------------------->
 </body>
