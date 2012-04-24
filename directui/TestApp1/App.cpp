@@ -128,10 +128,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*l
     CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath());
 
     HRESULT Hr = ::CoInitialize(NULL);
-    if( FAILED(Hr) ) return 0;
+    if (FAILED(Hr)) return 0;
 
     CFrameWindowWnd* pFrame = new CFrameWindowWnd();
-    if( pFrame == NULL ) return 0;
+    if (NULL == pFrame) return 0;
     pFrame->Create(NULL, _T("TestApp1"), UI_WNDSTYLE_FRAME, WS_EX_WINDOWEDGE);
     pFrame->CenterWindow();
     pFrame->ShowWindow(true);
