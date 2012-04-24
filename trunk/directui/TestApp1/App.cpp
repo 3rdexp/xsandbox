@@ -37,9 +37,11 @@ public:
         return true;
     }
 
-    bool OnLChanged(void* param) {
+    bool OnLChanged(void* param) 
+	{
         TNotifyUI* pMsg = (TNotifyUI*)param;
-        if( pMsg->sType == _T("valuechanged") ) {
+        if (_T("valuechanged") == pMsg->sType) 
+		{
             short H, S, L;
             CPaintManagerUI::GetHSL(&H, &S, &L);
             CPaintManagerUI::SetHSL(true, H, S, (static_cast<CSliderUI*>(pMsg->pSender))->GetValue());
@@ -47,9 +49,11 @@ public:
         return true;
     }
 
-    bool OnAlphaChanged(void* param) {
+    bool OnAlphaChanged(void* param) 
+	{
         TNotifyUI* pMsg = (TNotifyUI*)param;
-        if( pMsg->sType == _T("valuechanged") ) {
+        if (_T("valuechanged") == pMsg->sType) 
+		{
             m_pm.SetTransparent((static_cast<CSliderUI*>(pMsg->pSender))->GetValue());
         }
         return true;
@@ -68,7 +72,7 @@ public:
         
 		pSilder = static_cast<CSliderUI*>(m_pm.FindControl(_T("l_controlor")));
         if (pSilder) pSilder->OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnLChanged);
-
+		
 		COLORREF clrBack = RGB(0, 0, 0);
 		RECT rcCtrl = m_pm.FindControl(_T("changeskinbtn"))->GetPos();
 		m_pm.AddAnimJob(CAnimJobUI(UIANIMTYPE_FLAT, 0, 350, clrBack, clrBack, CRect(rcCtrl.left, rcCtrl.top, rcCtrl.left + 50, rcCtrl.top + 50), 40, 0, 4, 255, 0.3f));
@@ -76,16 +80,20 @@ public:
 
     void Notify(TNotifyUI& msg)
     {
-        if( msg.sType == _T("windowinit") ) OnPrepare();
-        else if( msg.sType == _T("click") ) {
-            if( msg.pSender->GetName() == _T("insertimagebtn") ) {
+        if (_T("windowinit") == msg.sType) OnPrepare();
+        else if (_T("click") == msg.sType) 
+		{
+            if (_T("insertimagebtn") == msg.pSender->GetName()) 
+			{
                 CRichEditUI* pRich = static_cast<CRichEditUI*>(m_pm.FindControl(_T("testrichedit")));
-                if( pRich ) {
+                if (pRich) 
+				{
                     pRich->RemoveAll();
                 }
             }
-            else if( msg.pSender->GetName() == _T("changeskinbtn") ) {
-                if( CPaintManagerUI::GetResourcePath() == CPaintManagerUI::GetInstancePath() )
+            else if (_T("changeskinbtn") == msg.pSender->GetName()) 
+			{
+                if (CPaintManagerUI::GetResourcePath() == CPaintManagerUI::GetInstancePath())
                     CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath() + _T("skin\\FlashRes"));
                 else
                     CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath());
@@ -96,7 +104,8 @@ public:
 
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
-        if( uMsg == WM_CREATE ) {
+        if (WM_CREATE == uMsg) 
+		{
             m_pm.Init(m_hWnd);
             CDialogBuilder builder;
             CControlUI* pRoot = builder.Create(_T("test1.xml"), (UINT)0, NULL, &m_pm);
@@ -106,14 +115,16 @@ public:
             Init();
             return 0;
         }
-        else if( uMsg == WM_DESTROY ) {
+        else if (WM_DESTROY == uMsg) 
+		{
             ::PostQuitMessage(0L);
         }
-        else if( uMsg == WM_ERASEBKGND ) {
+        else if (WM_ERASEBKGND == uMsg) 
+		{
             return 1;
         }
         LRESULT lRes = 0;
-        if( m_pm.MessageHandler(uMsg, wParam, lParam, lRes) ) return lRes;
+        if (m_pm.MessageHandler(uMsg, wParam, lParam, lRes)) return lRes;
         return CWindowWnd::HandleMessage(uMsg, wParam, lParam);
     }
 
