@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "config.h"
-
 #ifdef __GNUC__
 // 怎么都没找到min，max的头文件-_-
 // in the /usr/include/sys/param.h header file

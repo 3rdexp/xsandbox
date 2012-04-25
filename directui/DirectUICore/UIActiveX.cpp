@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "Internal.h"
 
 namespace DirectUICore {
 
