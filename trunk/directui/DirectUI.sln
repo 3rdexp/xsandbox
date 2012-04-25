@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectUICore", "DirectUICor
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestApp1", "TestApp1\TestApp1.vcproj", "{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloWorld", "HelloWorld\HelloWorld.vcproj", "{C998F2C1-206B-49BF-BB1F-67CAA63512BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}.Debug|Win32.Build.0 = Debug|Win32
 		{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}.Release|Win32.ActiveCfg = Release|Win32
 		{9948E32F-A319-41D3-B0CA-FAD0E0CFD1DC}.Release|Win32.Build.0 = Release|Win32
+		{C998F2C1-206B-49BF-BB1F-67CAA63512BB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C998F2C1-206B-49BF-BB1F-67CAA63512BB}.Debug|Win32.Build.0 = Debug|Win32
+		{C998F2C1-206B-49BF-BB1F-67CAA63512BB}.Release|Win32.ActiveCfg = Release|Win32
+		{C998F2C1-206B-49BF-BB1F-67CAA63512BB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
