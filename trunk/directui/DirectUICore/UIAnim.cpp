@@ -1,6 +1,7 @@
 
 #include "stdafx.h"
 #include "UIAnim.h"
+#include "Internal.h"
 
 #if (_MSC_VER < 1300)
 #pragma comment(lib, "Delayimp.lib")
