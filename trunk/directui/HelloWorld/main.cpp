@@ -27,11 +27,18 @@ class CFrameWindowWnd : public CWindowWnd, public INotifyUI
 public:
     CFrameWindowWnd() { };
     LPCTSTR GetWindowClassName() const { return _T("UIMainFrame"); };
-    UINT GetClassStyle() const { return UI_CLASSSTYLE_FRAME | CS_DBLCLKS; };
-    void OnFinalMessage(HWND /*hWnd*/) { delete this; };
 
     void Notify(TNotifyUI& msg)
     {
+		// msg.sType:
+		// * windowinit
+		// * click
+		// * selectchanged
+		// * killfocus
+		// * return
+		// * timer
+		// * itemselect
+		// ...
 		if (msg.sType == _T("click")) 
 		{
             if (msg.pSender->GetName() == _T("hellobtn")) 
@@ -57,10 +64,6 @@ public:
 		{
             ::PostQuitMessage(0L);
         }
-        else if (uMsg == WM_ERASEBKGND) 
-		{
-            return 1;
-        }
         LRESULT lRes = 0;
         if (m_pm.MessageHandler(uMsg, wParam, lParam, lRes)) return lRes;
         return CWindowWnd::HandleMessage(uMsg, wParam, lParam);
@@ -70,14 +73,17 @@ public:
     CPaintManagerUI m_pm;
 };
 
+// WinMain is the main entry point
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int nCmdShow)
 {
+	// CPaintManagerUI is the Windowless presentation manager
     CPaintManagerUI::SetInstance(hInstance);
     CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath());
 
     HRESULT Hr = ::CoInitialize(NULL);
     if (FAILED(Hr)) return 0;
 
+	// CFrameWindowWnd is the major class object to show a dialog window
     CFrameWindowWnd* pFrame = new CFrameWindowWnd();
     if (pFrame == NULL) return 0;
     pFrame->Create(NULL, _T("HelloWorld"), UI_WNDSTYLE_FRAME, WS_EX_WINDOWEDGE);
