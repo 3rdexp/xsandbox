@@ -54,6 +54,7 @@
 #include "UIBase.h"
 #include "UIAnim.h"
 #include "UIManager.h"
+#include "UIRender.h"
 #include "UIDelegate.h"
 #include "UIControl.h"
 #include "UIContainer.h"
@@ -65,5 +66,3 @@
 
 #include "UIMarkup.h"
 #include "UIDlgBuilder.h"
-#include "UIRender.h"
-

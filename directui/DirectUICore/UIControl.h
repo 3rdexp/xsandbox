@@ -28,11 +28,11 @@ public:
     virtual void SetManager(CPaintManagerUI* pManager, CControlUI* pParent, bool bInit = true);
     virtual CControlUI* GetParent() const;
 
-    // 文本相关
+    // Text
     virtual CStdString GetText() const;
     virtual void SetText(LPCTSTR pstrText);
 
-    // 图形相关
+    // Background and border color
     DWORD GetBkColor() const;
     void SetBkColor(DWORD dwBackColor);
     DWORD GetBkColor2() const;
@@ -53,7 +53,7 @@ public:
     void SetBorderRound(SIZE cxyRound);
     bool DrawImage(HDC hDC, LPCTSTR pStrImage, LPCTSTR pStrModify = NULL);
 
-    // 位置相关
+    // Position, size, margin, and padding
     virtual const RECT& GetPos() const;
     virtual void SetPos(RECT rc);
     virtual int GetWidth() const;
@@ -81,11 +81,11 @@ public:
     virtual TRelativePosUI GetRelativePos() const;
     virtual bool IsRelativePos() const;
 
-    // 鼠标提示
+    // Tooltip
     virtual CStdString GetToolTip() const;
     virtual void SetToolTip(LPCTSTR pstrText);
 
-    // 快捷键
+    // Shortcut
     virtual TCHAR GetShortcut() const;
     virtual void SetShortcut(TCHAR ch);
 
