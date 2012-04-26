@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="HelloWorld"
-	ProjectGUID="{C998F2C1-206B-49BF-BB1F-67CAA63512BB}"
-	RootNamespace="HelloWorld"
+	Name="ControlFactory"
+	ProjectGUID="{C3F7D43F-D7C7-4C48-99EF-F3E1E2702AB7}"
+	RootNamespace="ControlFactory"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\bin\Debug\HelloWorld.exe"
+				OutputFile="..\bin\Debug\ControlFactory.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -177,7 +177,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath=".\ControlFactory.cpp"
 				>
 			</File>
 		</Filter>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Set window min and normal size -->
+<Window mininfo="100,100" size="300,250">
+  <!-- Define the button with normal, hot and pushed image -->
+  <Default name="Button" value="normalimage=&quot;file='button_nor.bmp' corner='4,2,4,2' fade='200' hsl='true'&quot; hotimage=&quot;file='button_over.bmp' corner='4,2,4,2' fade='200' hsl='true'&quot; pushedimage=&quot;file='button_down.bmp' corner='4,2,4,2' fade='200' hsl='true' &quot; " />
+  <VerticalLayout inset="10,10,10,10" bkcolor="#FFF0F0F0" colorhsl="true">
+    <!-- The only button control in the dialog -->
+    <Button name="hellobtn" text="HelloWorld" tooltip="Click Me" padding="50,50,50,50" />
+  </VerticalLayout>
+</Window>
