@@ -272,7 +272,7 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
             continue;
         }
         else {
-            SIZE_T cchLen = _tcslen(pstrClass);
+            SIZE_T cchLen = _tcslen(pstrClass);	// for example, _tclslen("Toolbar") = 7
             switch( cchLen ) {
             case 4:
                 if( _tcscmp(pstrClass, _T("Edit")) == 0 )                   pControl = new CEditUI;
@@ -289,14 +289,15 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
                 else if( _tcscmp(pstrClass, _T("Slider")) == 0 )            pControl = new CSliderUI;
                 break;
             case 7:
-                if( _tcscmp(pstrClass, _T("Control")) == 0 )                pControl = new CControlUI;
+				if( _tcscmp(pstrClass, _T("Toolbar")) == 0 )               pControl = new CToolbarUI;
+                else if( _tcscmp(pstrClass, _T("Control")) == 0 )           pControl = new CControlUI;
                 else if( _tcscmp(pstrClass, _T("ActiveX")) == 0 )           pControl = new CActiveXUI;
                 break;
             case 8:
                 if( _tcscmp(pstrClass, _T("Progress")) == 0 )               pControl = new CProgressUI;
                 else if(  _tcscmp(pstrClass, _T("RichEdit")) == 0 )         pControl = new CRichEditUI;
 				// add by:zjie
-				else if (_tcscmp(pstrClass, _T("CheckBox")) == 0)				pControl = new CCheckBoxUI;
+				else if (_tcscmp(pstrClass, _T("CheckBox")) == 0)			pControl = new CCheckBoxUI;
 				else if (_tcscmp(pstrClass, _T("ComboBox")) == 0)			pControl = new CComboBoxUI;
 				else if (_tcscmp(pstrClass, _T("DateTime")) == 0)			pControl = new CDateTimeUI;
 				// add by:zjie
@@ -309,6 +310,7 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
             case 10:
                 if( _tcscmp(pstrClass, _T("ListHeader")) == 0 )             pControl = new CListHeaderUI;
                 else if( _tcscmp(pstrClass, _T("TileLayout")) == 0 )        pControl = new CTileLayoutUI;
+				else if( _tcscmp(pstrClass, _T("ToolButton")) == 0 )       pControl = new CToolButtonUI;
                 break;
             case 14:
                 if( _tcscmp(pstrClass, _T("VerticalLayout")) == 0 )         pControl = new CVerticalLayoutUI;

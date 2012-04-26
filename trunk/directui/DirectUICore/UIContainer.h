@@ -52,7 +52,7 @@ public:
     void SetMouseEnabled(bool bEnable = true);
 
     virtual RECT GetInset() const;
-    virtual void SetInset(RECT rcInset); // 设置内边距，相当于设置客户区
+    virtual void SetInset(RECT rcInset); // Set margin
     virtual int GetChildPadding() const;
     virtual void SetChildPadding(int iPadding);
     virtual bool IsAutoDestroy() const;
@@ -235,6 +235,75 @@ public:
 
 protected:
     int m_iCurSel;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+
+class UILIB_API CToolbarUI : public CHorizontalLayoutUI
+{
+public:
+   CToolbarUI();
+
+   LPCTSTR GetClass() const;
+   SIZE EstimateSize(SIZE szAvailable);
+   void DoPaint(HDC hDC, const RECT& rcPaint);
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+
+class UILIB_API CToolbarTitlePanelUI : public CControlUI
+{
+public:
+   CToolbarTitlePanelUI();
+
+   void SetPadding(int iPadding);
+
+   LPCTSTR GetClass() const;   
+   SIZE EstimateSize(SIZE szAvailable);
+   void DoPaint(HDC hDC, const RECT& rcPaint);
+
+protected:
+   int m_iPadding;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+
+class UILIB_API CToolSeparatorUI : public CControlUI
+{
+public:
+   LPCTSTR GetClass() const;
+   SIZE EstimateSize(SIZE szAvailable);
+   void DoPaint(HDC hDC, const RECT& rcPaint);
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+
+class UILIB_API CToolGripperUI : public CControlUI
+{
+public:
+   LPCTSTR GetClass() const;
+   SIZE EstimateSize(SIZE szAvailable);
+   void DoPaint(HDC hDC, const RECT& rcPaint);
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+
+class UILIB_API CStatusbarUI : public CContainerUI
+{
+public:
+   LPCTSTR GetClass() const;
+
+   SIZE EstimateSize(SIZE szAvailable);
+   void DoPaint(HDC hDC, const RECT& rcPaint);
 };
 
 } // namespace DirectUICore

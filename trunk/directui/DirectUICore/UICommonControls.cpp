@@ -520,6 +520,28 @@ void CButtonUI::PaintStatusImage(HDC hDC)
 //
 //
 
+CToolButtonUI::CToolButtonUI()
+{
+}
+
+LPCTSTR CToolButtonUI::GetClass() const
+{
+   return _T("ToolButtonUI");
+}
+
+void CToolButtonUI::DoPaint(HDC hDC, const RECT& rcPaint)
+{
+   UINT uState = 0;
+   if( IsFocused() ) uState |= UISTATE_FOCUSED;
+   if( !IsEnabled() ) uState |= UISTATE_DISABLED;
+   //CBlueRenderEngineUI::DoPaintToolbarButton(hDC, m_pManager, m_rcItem, m_sText, m_szPadding, m_uButtonState | uState);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+//
+
 COptionUI::COptionUI() : m_bSelected(false), m_dwSelectedTextColor(0)
 {
 }
