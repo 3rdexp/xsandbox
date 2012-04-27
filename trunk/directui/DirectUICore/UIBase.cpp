@@ -1090,7 +1090,8 @@ bool CWindowWnd::RegisterWindowClass()
     wc.lpfnWndProc = CWindowWnd::__WndProc;
     wc.hInstance = CPaintManagerUI::GetInstance();
     wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = NULL;
+	// FIXME: fail to set windows background color
+	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = GetWindowClassName();
     ATOM ret = ::RegisterClass(&wc);
