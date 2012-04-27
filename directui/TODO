@@ -1,1 +1,10 @@
-Add DirectX animation support developed by Bjarke Viksoe (bjarke@viksoe.dk)
+* Add DirectX animation support developed by Bjarke Viksoe (bjarke@viksoe.dk)
+* Add Menubar container
+* Add ComboBoxEntry
+* Add NumericUpDown
+* Add CheckBox/RadioBox
+* Add ToggleButton
+* Add SwitchButton
+
+* Fix CEditUI focused bkcolor when Window`s bkcolor is black
+* Fix CComboUI fail to inherit Window`s defaultfontcolor

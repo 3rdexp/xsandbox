@@ -289,8 +289,7 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
                 else if( _tcscmp(pstrClass, _T("Slider")) == 0 )            pControl = new CSliderUI;
                 break;
             case 7:
-				if( _tcscmp(pstrClass, _T("Toolbar")) == 0 )               pControl = new CToolbarUI;
-                else if( _tcscmp(pstrClass, _T("Control")) == 0 )           pControl = new CControlUI;
+				if( _tcscmp(pstrClass, _T("Control")) == 0 )           pControl = new CControlUI;
                 else if( _tcscmp(pstrClass, _T("ActiveX")) == 0 )           pControl = new CActiveXUI;
                 break;
             case 8:
@@ -310,8 +309,7 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
             case 10:
                 if( _tcscmp(pstrClass, _T("ListHeader")) == 0 )             pControl = new CListHeaderUI;
                 else if( _tcscmp(pstrClass, _T("TileLayout")) == 0 )        pControl = new CTileLayoutUI;
-				else if( _tcscmp(pstrClass, _T("ToolButton")) == 0 )       pControl = new CToolButtonUI;
-                break;
+				break;
             case 14:
                 if( _tcscmp(pstrClass, _T("VerticalLayout")) == 0 )         pControl = new CVerticalLayoutUI;
                 else if( _tcscmp(pstrClass, _T("ListHeaderItem")) == 0 )    pControl = new CListHeaderItemUI;
