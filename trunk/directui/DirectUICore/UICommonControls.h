@@ -100,18 +100,6 @@ protected:
 /////////////////////////////////////////////////////////////////////////////////////
 //
 
-class UILIB_API CToolButtonUI : public CButtonUI
-{
-public:
-   CToolButtonUI();
-   LPCTSTR GetClass() const;
-   void DoPaint(HDC hDC, const RECT& rcPaint);
-};
-
-
-/////////////////////////////////////////////////////////////////////////////////////
-//
-
 class UILIB_API COptionUI : public CButtonUI
 {
 public:
