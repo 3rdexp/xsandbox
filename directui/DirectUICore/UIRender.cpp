@@ -1174,8 +1174,8 @@ void CRenderEngine::DrawRoundRect(HDC hDC, const RECT& rc, int nSize, int width,
 
 void CRenderEngine::DrawText(HDC hDC, CPaintManagerUI* pManager, RECT& rc, LPCTSTR pstrText, DWORD dwTextColor, int iFont, UINT uStyle)
 {
-    ASSERT(::GetObjectType(hDC)==OBJ_DC || ::GetObjectType(hDC)==OBJ_MEMDC);
-    if( pstrText == NULL || pManager == NULL ) return;
+    ASSERT(::GetObjectType(hDC) == OBJ_DC || ::GetObjectType(hDC) == OBJ_MEMDC);
+    if (pstrText == NULL || pManager == NULL) return;
     ::SetBkMode(hDC, TRANSPARENT);
     ::SetTextColor(hDC, RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
     HFONT hOldFont = (HFONT)::SelectObject(hDC, pManager->GetFont(iFont));

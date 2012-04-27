@@ -1291,11 +1291,11 @@ void CEditWnd::Init(CEditUI* pOwner)
     m_pOwner = pOwner;
     RECT rcPos = CalPos();
     UINT uStyle = WS_CHILD | ES_AUTOHSCROLL;
-    if( m_pOwner->IsPasswordMode() ) uStyle |= ES_PASSWORD;
+    if (m_pOwner->IsPasswordMode()) uStyle |= ES_PASSWORD;
     Create(m_pOwner->GetManager()->GetPaintWindow(), NULL, uStyle, 0, rcPos);
     SetWindowFont(m_hWnd, m_pOwner->GetManager()->GetFontInfo(m_pOwner->GetFont())->hFont, TRUE);
     Edit_LimitText(m_hWnd, m_pOwner->GetMaxChar());
-    if( m_pOwner->IsPasswordMode() ) Edit_SetPasswordChar(m_hWnd, m_pOwner->GetPasswordChar());
+    if (m_pOwner->IsPasswordMode()) Edit_SetPasswordChar(m_hWnd, m_pOwner->GetPasswordChar());
     Edit_SetText(m_hWnd, m_pOwner->GetText());
     Edit_SetModify(m_hWnd, FALSE);
     SendMessage(EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELPARAM(0, 0));
@@ -1303,7 +1303,7 @@ void CEditWnd::Init(CEditUI* pOwner)
     Edit_SetReadOnly(m_hWnd, m_pOwner->IsReadOnly() == true);
     ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
     ::SetFocus(m_hWnd);
-    m_bInit = true;    
+    m_bInit = true;
 }
 
 RECT CEditWnd::CalPos()
