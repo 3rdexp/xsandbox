@@ -215,7 +215,8 @@ UINT CMenuWnd::GetClassStyle() const
 ////////////////////////////////////////////////////////
 
 
-CMenuUI::CMenuUI() : m_pWindow(NULL), m_iCurSel(-1), m_uButtonState(0)
+CMenuUI::CMenuUI() : m_pWindow(NULL), m_iCurSel(-1), m_uButtonState(0), 
+	m_uTextStyle(DT_VCENTER), m_dwTextColor(0), m_dwDisabledTextColor(0), m_iFont(-1)
 {
     m_szDropBox = CSize(0, 150);
     ::ZeroMemory(&m_rcTextPadding, sizeof(m_rcTextPadding));
@@ -315,6 +316,47 @@ bool CMenuUI::SetItemIndex(CControlUI* pControl, int iIndex)
     }
     if( m_iCurSel >= 0 && pSelectedListItem != NULL ) m_iCurSel = pSelectedListItem->GetIndex();
     return true;
+}
+
+void CMenuUI::SetTextStyle(UINT uStyle)
+{
+    m_uTextStyle = uStyle;
+    Invalidate();
+}
+
+UINT CMenuUI::GetTextStyle() const
+{
+	return m_uTextStyle;
+}
+
+void CMenuUI::SetTextColor(DWORD dwTextColor)
+{
+    m_dwTextColor = dwTextColor;
+}
+
+DWORD CMenuUI::GetTextColor() const
+{
+	return m_dwTextColor;
+}
+
+void CMenuUI::SetDisabledTextColor(DWORD dwTextColor)
+{
+    m_dwDisabledTextColor = dwTextColor;
+}
+
+DWORD CMenuUI::GetDisabledTextColor() const
+{
+	return m_dwDisabledTextColor;
+}
+
+void CMenuUI::SetFont(int index)
+{
+    m_iFont = index;
+}
+
+int CMenuUI::GetFont() const
+{
+	return m_iFont;
 }
 
 bool CMenuUI::Add(CControlUI* pControl)
@@ -955,24 +997,25 @@ void CMenuUI::PaintStatusImage(HDC hDC)
 
 void CMenuUI::PaintText(HDC hDC)
 {
-    RECT rcText = m_rcItem;
+	if (m_dwTextColor == 0) m_dwTextColor = m_pManager->GetDefaultFontColor();
+    if (m_dwDisabledTextColor == 0) m_dwDisabledTextColor = m_pManager->GetDefaultDisabledColor();
+
+    if (m_sText.IsEmpty()) return;
+
+	RECT rcText = m_rcItem;
     rcText.left += m_rcTextPadding.left;
     rcText.right -= m_rcTextPadding.right;
     rcText.top += m_rcTextPadding.top;
     rcText.bottom -= m_rcTextPadding.bottom;
-
-    if( m_iCurSel >= 0 ) {
-        CControlUI* pControl = static_cast<CControlUI*>(m_items[m_iCurSel]);
-        IListItemUI* pElement = static_cast<IListItemUI*>(pControl->GetInterface(_T("ListItem")));
-        if( pElement != NULL ) {
-            pElement->DrawItemText(hDC, rcText);
-        }
-        else {
-            RECT rcOldPos = pControl->GetPos();
-            pControl->SetPos(rcText);
-            pControl->DoPaint(hDC, rcText);
-            pControl->SetPos(rcOldPos);
-        }
+	if (IsEnabled()) 
+	{
+		CRenderEngine::DrawText(hDC, m_pManager, rcText, m_sText, m_dwTextColor, 
+			m_iFont, DT_SINGLELINE | m_uTextStyle);
+    }
+    else 
+	{
+		CRenderEngine::DrawText(hDC, m_pManager, rcText, m_sText, m_dwDisabledTextColor, 
+			m_iFont, DT_SINGLELINE | m_uTextStyle);
     }
 }
 

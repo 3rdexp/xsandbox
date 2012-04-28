@@ -41,6 +41,16 @@ public:
 
     bool Activate();
 
+	void SetTextStyle(UINT uStyle);
+	UINT GetTextStyle() const;
+	void SetTextColor(DWORD dwTextColor);
+	DWORD GetTextColor() const;
+    void SetDisabledTextColor(DWORD dwTextColor);
+	DWORD GetDisabledTextColor() const;
+    void SetFont(int index);
+	int GetFont() const;
+	UINT m_uTextStyle;
+
     RECT GetTextPadding() const;
     void SetTextPadding(RECT rc);
     LPCTSTR GetNormalImage() const;
@@ -107,6 +117,10 @@ protected:
     CStdString m_sDropBoxAttributes;
     SIZE m_szDropBox;
     UINT m_uButtonState;
+
+	DWORD m_dwTextColor;
+    DWORD m_dwDisabledTextColor;
+    int m_iFont;
 
     CStdString m_sNormalImage;
     CStdString m_sHotImage;
