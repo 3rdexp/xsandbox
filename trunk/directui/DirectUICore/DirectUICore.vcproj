@@ -238,6 +238,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UIMenu.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UIRender.cpp"
 				>
 			</File>
@@ -313,6 +317,10 @@
 			</File>
 			<File
 				RelativePath=".\UIMarkup.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UIMenu.h"
 				>
 			</File>
 			<File

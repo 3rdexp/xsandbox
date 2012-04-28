@@ -272,12 +272,13 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
             continue;
         }
         else {
-            SIZE_T cchLen = _tcslen(pstrClass);	// for example, _tclslen("Toolbar") = 7
+            SIZE_T cchLen = _tcslen(pstrClass);	// for example, _tclslen("Menu") = 4
             switch( cchLen ) {
             case 4:
                 if( _tcscmp(pstrClass, _T("Edit")) == 0 )                   pControl = new CEditUI;
                 else if( _tcscmp(pstrClass, _T("List")) == 0 )              pControl = new CListUI;
                 else if( _tcscmp(pstrClass, _T("Text")) == 0 )              pControl = new CTextUI;
+				else if (_tcscmp(pstrClass, _T("Menu")) == 0)				pControl = new CMenuUI;
                 break;
             case 5:
                 if( _tcscmp(pstrClass, _T("Combo")) == 0 )                  pControl = new CComboUI;
