@@ -9,7 +9,7 @@ namespace DirectUICore {
 
 class CMenuWnd;
 
-class UILIB_API CMenuUI : public CContainerUI, public IListOwnerUI
+class UILIB_API CMenuUI : public CContainerUI 
 {
     friend class CMenuWnd;
 public:
@@ -64,42 +64,6 @@ public:
     LPCTSTR GetDisabledImage() const;
     void SetDisabledImage(LPCTSTR pStrImage);
 
-    TListInfoUI* GetListInfo();
-    void SetItemFont(int index);
-    void SetItemTextStyle(UINT uStyle);
-	RECT GetItemTextPadding() const;
-    void SetItemTextPadding(RECT rc);
-	DWORD GetItemTextColor() const;
-    void SetItemTextColor(DWORD dwTextColor);
-	DWORD GetItemBkColor() const;
-    void SetItemBkColor(DWORD dwBkColor);
-	LPCTSTR GetItemBkImage() const;
-    void SetItemBkImage(LPCTSTR pStrImage);
-    bool IsAlternateBk() const;
-    void SetAlternateBk(bool bAlternateBk);
-	DWORD GetSelectedItemTextColor() const;
-    void SetSelectedItemTextColor(DWORD dwTextColor);
-	DWORD GetSelectedItemBkColor() const;
-    void SetSelectedItemBkColor(DWORD dwBkColor);
-	LPCTSTR GetSelectedItemImage() const;
-    void SetSelectedItemImage(LPCTSTR pStrImage);
-	DWORD GetHotItemTextColor() const;
-    void SetHotItemTextColor(DWORD dwTextColor);
-	DWORD GetHotItemBkColor() const;
-    void SetHotItemBkColor(DWORD dwBkColor);
-	LPCTSTR GetHotItemImage() const;
-    void SetHotItemImage(LPCTSTR pStrImage);
-	DWORD GetDisabledItemTextColor() const;
-    void SetDisabledItemTextColor(DWORD dwTextColor);
-	DWORD GetDisabledItemBkColor() const;
-    void SetDisabledItemBkColor(DWORD dwBkColor);
-	LPCTSTR GetDisabledItemImage() const;
-    void SetDisabledItemImage(LPCTSTR pStrImage);
-	DWORD GetItemLineColor() const;
-    void SetItemLineColor(DWORD dwLineColor);
-    bool IsItemShowHtml();
-    void SetItemShowHtml(bool bShowHtml = true);
-
     SIZE EstimateSize(SIZE szAvailable);
     void SetPos(RECT rc);
     void DoEvent(TEventUI& event);
@@ -127,8 +91,6 @@ protected:
     CStdString m_sPushedImage;
     CStdString m_sFocusedImage;
     CStdString m_sDisabledImage;
-
-    TListInfoUI m_ListInfo;
 };
 
 class CMenuElementUI;
@@ -136,8 +98,7 @@ class CMenuElementUI;
 class CMenuWnd : public CWindowWnd
 {
 public:
-    void Init(CMenuUI* pOwner);
-	void Init(CMenuElementUI* pSubOwner, POINT point);
+	void Init(CMenuElementUI* pOwner, POINT point);
     LPCTSTR GetWindowClassName() const;
     void OnFinalMessage(HWND hWnd);
 
@@ -152,8 +113,7 @@ public:
 
 public:
     CPaintManagerUI m_pm;
-    CMenuUI* m_pOwner;
-	CMenuElementUI* m_pSubOwner;
+	CMenuElementUI* m_pOwner;
     CVerticalLayoutUI* m_pLayout;
 	POINT m_BasedPoint;
     int m_iOldSel;
