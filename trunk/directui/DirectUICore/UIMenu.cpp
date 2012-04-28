@@ -3,33 +3,238 @@
 namespace DirectUICore {
 
 /////////////////////////////////////////////////////////////////////////////////////
-//
-//
 
-class CMenuWnd : public CWindowWnd
+CMenuElementUI::CMenuElementUI() : m_pWindow(NULL)
 {
-public:
-    void Init(CMenuUI* pOwner);
-    LPCTSTR GetWindowClassName() const;
-    void OnFinalMessage(HWND hWnd);
+	m_cxyFixed.cy = 25;
+	m_bMouseChildEnabled = true;
+	SetMouseChildEnabled(false);
+}
 
-    LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+CMenuElementUI::~CMenuElementUI() {}
 
-    void EnsureVisible(int iIndex);
-    void Scroll(int dx, int dy);
+LPCTSTR CMenuElementUI::GetClass() const
+{
+	return _T("CMenuElementUI");
+}
 
-#if(_WIN32_WINNT >= 0x0501)
-	virtual UINT GetClassStyle() const;
-#endif
+LPVOID CMenuElementUI::GetInterface(LPCTSTR pstrName)
+{
+    if( _tcsicmp(pstrName, _T("MenuElement")) == 0 ) return static_cast<CMenuElementUI*>(this);    
+    return CListContainerElementUI::GetInterface(pstrName);
+}
 
-public:
-    CPaintManagerUI m_pm;
-    CMenuUI* m_pOwner;
-    CVerticalLayoutUI* m_pLayout;
-    int m_iOldSel;
-};
+void CMenuElementUI::DoPaint(HDC hDC, const RECT& rcPaint)
+{
+	int i;
+
+    if (!::IntersectRect(&m_rcPaint, &rcPaint, &m_rcItem)) return;
+	CMenuElementUI::DrawItemBk(hDC, m_rcItem);
+	DrawItemText(hDC, m_rcItem);
+	for (i = 0; i < GetCount(); ++i)
+	{
+		if (GetItemAt(i)->GetInterface(_T("MenuElement")) == NULL)
+			GetItemAt(i)->DoPaint(hDC, rcPaint);
+	}
+}
+
+void CMenuElementUI::DrawItemText(HDC hDC, const RECT& rcItem)
+{
+    if( m_sText.IsEmpty() ) return;
+
+    if( m_pOwner == NULL ) return;
+    TListInfoUI* pInfo = m_pOwner->GetListInfo();
+    DWORD iTextColor = pInfo->dwTextColor;
+    if( (m_uButtonState & UISTATE_HOT) != 0 ) {
+        iTextColor = pInfo->dwHotTextColor;
+    }
+    if( IsSelected() ) {
+        iTextColor = pInfo->dwSelectedTextColor;
+    }
+    if( !IsEnabled() ) {
+        iTextColor = pInfo->dwDisabledTextColor;
+    }
+    int nLinks = 0;
+    RECT rcText = rcItem;
+    rcText.left += pInfo->rcTextPadding.left;
+    rcText.right -= pInfo->rcTextPadding.right;
+    rcText.top += pInfo->rcTextPadding.top;
+    rcText.bottom -= pInfo->rcTextPadding.bottom;
+
+    if( pInfo->bShowHtml )
+        CRenderEngine::DrawHtmlText(hDC, m_pManager, rcText, m_sText, iTextColor, \
+        NULL, NULL, nLinks, DT_SINGLELINE | pInfo->uTextStyle);
+    else
+        CRenderEngine::DrawText(hDC, m_pManager, rcText, m_sText, iTextColor, \
+        pInfo->nFont, DT_SINGLELINE | pInfo->uTextStyle);
+}
 
 
+SIZE CMenuElementUI::EstimateSize(SIZE szAvailable)
+{
+	SIZE cXY = {0};
+	for( int it = 0; it < GetCount(); it++ ) {
+		CControlUI* pControl = static_cast<CControlUI*>(GetItemAt(it));
+		if( !pControl->IsVisible() ) continue;
+		SIZE sz = pControl->EstimateSize(szAvailable);
+		cXY.cy += sz.cy;
+		if( cXY.cx < sz.cx )
+			cXY.cx = sz.cx;
+	}
+	if(cXY.cy == 0) {
+		TListInfoUI* pInfo = m_pOwner->GetListInfo();
+
+		DWORD iTextColor = pInfo->dwTextColor;
+		if( (m_uButtonState & UISTATE_HOT) != 0 ) {
+			iTextColor = pInfo->dwHotTextColor;
+		}
+		if( IsSelected() ) {
+			iTextColor = pInfo->dwSelectedTextColor;
+		}
+		if( !IsEnabled() ) {
+			iTextColor = pInfo->dwDisabledTextColor;
+		}
+
+		RECT rcText = { 0, 0, MAX(szAvailable.cx, m_cxyFixed.cx), 9999 };
+		rcText.left += pInfo->rcTextPadding.left;
+		rcText.right -= pInfo->rcTextPadding.right;
+		if( pInfo->bShowHtml ) {   
+			int nLinks = 0;
+			CRenderEngine::DrawHtmlText(m_pManager->GetPaintDC(), m_pManager, rcText, m_sText, iTextColor, NULL, NULL, nLinks, DT_CALCRECT | pInfo->uTextStyle);
+		}
+		else {
+			CRenderEngine::DrawText(m_pManager->GetPaintDC(), m_pManager, rcText, m_sText, iTextColor, pInfo->nFont, DT_CALCRECT | pInfo->uTextStyle);
+		}
+		cXY.cx = rcText.right - rcText.left + pInfo->rcTextPadding.left + pInfo->rcTextPadding.right + 20;
+		cXY.cy = rcText.bottom - rcText.top + pInfo->rcTextPadding.top + pInfo->rcTextPadding.bottom;
+	}
+
+	if( m_cxyFixed.cy != 0 ) cXY.cy = m_cxyFixed.cy;
+	return cXY;
+}
+
+void CMenuElementUI::DoEvent(TEventUI& event)
+{
+	if( event.Type == UIEVENT_MOUSEENTER )
+	{
+		CListContainerElementUI::DoEvent(event);
+		if( m_pWindow ) return;
+		bool hasSubMenu = false;
+		for( int i = 0; i < GetCount(); ++i )
+		{
+			if( GetItemAt(i)->GetInterface(_T("MenuElement")) != NULL )
+			{
+				(static_cast<CMenuElementUI*>(GetItemAt(i)->GetInterface(_T("MenuElement"))))->SetVisible(true);
+				(static_cast<CMenuElementUI*>(GetItemAt(i)->GetInterface(_T("MenuElement"))))->SetInternVisible(true);
+
+				hasSubMenu = true;
+			}
+		}
+		if( hasSubMenu )
+		{
+			m_pOwner->SelectItem(GetIndex(), true);
+			CreateMenuWnd();
+		}
+		else
+		{
+			ContextMenuParam param;
+			param.hWnd = m_pManager->GetPaintWindow();
+			param.wParam = 2;
+			//s_context_menu_observer.RBroadcast(param);
+			m_pOwner->SelectItem(GetIndex(), true);
+		}
+		return;
+	}
+
+	if( event.Type == UIEVENT_BUTTONDOWN )
+	{
+		if( IsEnabled() ){
+			CListContainerElementUI::DoEvent(event);
+
+			if( m_pWindow ) return;
+
+			bool hasSubMenu = false;
+			for( int i = 0; i < GetCount(); ++i ) {
+				if( GetItemAt(i)->GetInterface(_T("MenuElement")) != NULL ) {
+					(static_cast<CMenuElementUI*>(GetItemAt(i)->GetInterface(_T("MenuElement"))))->SetVisible(true);
+					(static_cast<CMenuElementUI*>(GetItemAt(i)->GetInterface(_T("MenuElement"))))->SetInternVisible(true);
+
+					hasSubMenu = true;
+				}
+			}
+			if( hasSubMenu )
+			{
+				CreateMenuWnd();
+			}
+			else
+			{
+				ContextMenuParam param;
+				param.hWnd = m_pManager->GetPaintWindow();
+				param.wParam = 1;
+				//s_context_menu_observer.RBroadcast(param);
+			}
+        }
+        return;
+    }
+
+    CListContainerElementUI::DoEvent(event);
+}
+
+bool CMenuElementUI::Activate()
+{
+	if (CListContainerElementUI::Activate() && m_bSelected)
+	{
+		if( m_pWindow ) return true;
+		bool hasSubMenu = false;
+		for (int i = 0; i < GetCount(); ++i)
+		{
+			if (GetItemAt(i)->GetInterface(_T("MenuElement")) != NULL)
+			{
+				(static_cast<CMenuElementUI*>(GetItemAt(i)->GetInterface(_T("MenuElement"))))->SetVisible(true);
+				(static_cast<CMenuElementUI*>(GetItemAt(i)->GetInterface(_T("MenuElement"))))->SetInternVisible(true);
+
+				hasSubMenu = true;
+			}
+		}
+		if (hasSubMenu)
+		{
+			CreateMenuWnd();
+		}
+		else
+		{
+			ContextMenuParam param;
+			param.hWnd = m_pManager->GetPaintWindow();
+			param.wParam = 1;
+			//s_context_menu_observer.RBroadcast(param);
+		}
+
+		return true;
+	}
+	return false;
+}
+
+CMenuWnd* CMenuElementUI::GetMenuWnd()
+{
+	return m_pWindow;
+}
+
+void CMenuElementUI::CreateMenuWnd()
+{
+	if (m_pWindow) return;
+
+	m_pWindow = new CMenuWnd();
+	ASSERT(m_pWindow);
+
+	ContextMenuParam param;
+	param.hWnd = m_pManager->GetPaintWindow();
+	param.wParam = 2;
+	//s_context_menu_observer.RBroadcast(param);
+
+	m_pWindow->Init(static_cast<CMenuElementUI*>(this), CPoint());
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
 void CMenuWnd::Init(CMenuUI* pOwner)
 {
 	int i;
@@ -81,6 +286,26 @@ void CMenuWnd::Init(CMenuUI* pOwner)
     ::ShowWindow(m_hWnd, SW_SHOW);
     ::SendMessage(hWndParent, WM_NCACTIVATE, TRUE, 0L);
 }
+
+
+void CMenuWnd::Init(CMenuElementUI* pSubOwner, POINT point)
+{
+	m_BasedPoint = point;
+    m_pSubOwner = pSubOwner;
+    m_pLayout = NULL;
+
+	//s_context_menu_observer.AddReceiver(this);
+
+	Create(m_pSubOwner->GetManager()->GetPaintWindow(), NULL, WS_POPUP, WS_EX_TOOLWINDOW | WS_EX_TOPMOST, CRect());
+    // HACK: Don't deselect the parent's caption
+    HWND hWndParent = m_hWnd;
+    while( ::GetParent(hWndParent) != NULL ) hWndParent = ::GetParent(hWndParent);
+    ::ShowWindow(m_hWnd, SW_SHOW);
+#if defined(WIN32) && !defined(UNDER_CE)
+    ::SendMessage(hWndParent, WM_NCACTIVATE, TRUE, 0L);
+#endif	
+}
+
 
 LPCTSTR CMenuWnd::GetWindowClassName() const
 {
@@ -247,8 +472,8 @@ LPCTSTR CMenuUI::GetClass() const
 
 LPVOID CMenuUI::GetInterface(LPCTSTR pstrName)
 {
-	if( _tcscmp(pstrName, _T("Menu")) == 0 ) return static_cast<CMenuUI*>(this);
-    if( _tcscmp(pstrName, _T("IListOwner")) == 0 ) return static_cast<IListOwnerUI*>(this);
+	if (_tcscmp(pstrName, _T("Menu")) == 0) return static_cast<CMenuUI*>(this);
+    //if (_tcscmp(pstrName, _T("IListOwner")) == 0) return static_cast<IListOwnerUI*>(this);
     return CContainerUI::GetInterface(pstrName);
 }
 
@@ -275,8 +500,8 @@ bool CMenuUI::SelectItem(int iIndex, bool bTakeFocus)
 	{
         CControlUI* pControl = static_cast<CControlUI*>(m_items[m_iCurSel]);
         if (!pControl) return false;
-        IListItemUI* pListItem = static_cast<IListItemUI*>(pControl->GetInterface(_T("ListItem")));
-        if (pListItem) pListItem->Select(false);
+        CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(pControl->GetInterface(_T("MenuItem")));
+        if (pMenuItem) pMenuItem->Select(false);
         m_iCurSel = -1;
     }
     if (iIndex < 0) return false;
@@ -284,11 +509,11 @@ bool CMenuUI::SelectItem(int iIndex, bool bTakeFocus)
     if (iIndex >= m_items.GetSize()) iIndex = m_items.GetSize() - 1;
     CControlUI* pControl = static_cast<CControlUI*>(m_items[iIndex]);
     if (!pControl || !pControl->IsVisible() || !pControl->IsEnabled()) return false;
-    IListItemUI* pListItem = static_cast<IListItemUI*>(pControl->GetInterface(_T("ListItem")));
-    if (pListItem == NULL) return false;
+    CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(pControl->GetInterface(_T("MenuItem")));
+    if (pMenuItem == NULL) return false;
     m_iCurSel = iIndex;
     if (m_pWindow || bTakeFocus ) pControl->SetFocus();
-    pListItem->Select(true);
+    pMenuItem->Select(true);
     if (m_pManager) m_pManager->SendNotify(this, _T("itemselect"), m_iCurSel, iOldSel);
     Invalidate();
 
@@ -298,23 +523,27 @@ bool CMenuUI::SelectItem(int iIndex, bool bTakeFocus)
 bool CMenuUI::SetItemIndex(CControlUI* pControl, int iIndex)
 {
     int iOrginIndex = GetItemIndex(pControl);
-    if( iOrginIndex == -1 ) return false;
-    if( iOrginIndex == iIndex ) return true;
+	int i;
 
-    IListItemUI* pSelectedListItem = NULL;
-    if( m_iCurSel >= 0 ) pSelectedListItem = 
-        static_cast<IListItemUI*>(GetItemAt(m_iCurSel)->GetInterface(_T("ListItem")));
-    if( !CContainerUI::SetItemIndex(pControl, iIndex) ) return false;
+    if (iOrginIndex == -1) return false;
+    if (iOrginIndex == iIndex) return true;
+
+    CMenuElementUI* pSelectedMenuItem = NULL;
+    if (0 <= m_iCurSel) pSelectedMenuItem = 
+        static_cast<CMenuElementUI*>(GetItemAt(m_iCurSel)->GetInterface(_T("MenuItem")));
+    if (!CContainerUI::SetItemIndex(pControl, iIndex)) return false;
     int iMinIndex = min(iOrginIndex, iIndex);
     int iMaxIndex = max(iOrginIndex, iIndex);
-    for(int i = iMinIndex; i < iMaxIndex + 1; ++i) {
+    for (i = iMinIndex; i < iMaxIndex + 1; ++i) 
+	{
         CControlUI* p = GetItemAt(i);
-        IListItemUI* pListItem = static_cast<IListItemUI*>(p->GetInterface(_T("ListItem")));
-        if( pListItem != NULL ) {
-            pListItem->SetIndex(i);
+        CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(p->GetInterface(_T("MenuItem")));
+        if (pMenuItem) 
+		{
+            pMenuItem->SetIndex(i);
         }
     }
-    if( m_iCurSel >= 0 && pSelectedListItem != NULL ) m_iCurSel = pSelectedListItem->GetIndex();
+    if (0 <= m_iCurSel && pSelectedMenuItem) m_iCurSel = pSelectedMenuItem->GetIndex();
     return true;
 }
 
@@ -361,31 +590,35 @@ int CMenuUI::GetFont() const
 
 bool CMenuUI::Add(CControlUI* pControl)
 {
-    IListItemUI* pListItem = static_cast<IListItemUI*>(pControl->GetInterface(_T("ListItem")));
-    if( pListItem != NULL ) 
+    CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(pControl->GetInterface(_T("MenuItem")));
+    if (pMenuItem) 
     {
-        pListItem->SetOwner(this);
-        pListItem->SetIndex(m_items.GetSize());
+        pMenuItem->SetOwner(this);
+        pMenuItem->SetIndex(m_items.GetSize());
     }
     return CContainerUI::Add(pControl);
 }
 
 bool CMenuUI::AddAt(CControlUI* pControl, int iIndex)
 {
+	int i;
+
     if (!CContainerUI::AddAt(pControl, iIndex)) return false;
 
-    // The list items should know about us
-    IListItemUI* pListItem = static_cast<IListItemUI*>(pControl->GetInterface(_T("ListItem")));
-    if( pListItem != NULL ) {
-        pListItem->SetOwner(this);
-        pListItem->SetIndex(iIndex);
+    CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(pControl->GetInterface(_T("MenuItem")));
+    if (pMenuItem) 
+	{
+        pMenuItem->SetOwner(this);
+        pMenuItem->SetIndex(iIndex);
     }
 
-    for(int i = iIndex + 1; i < GetCount(); ++i) {
+    for (i = iIndex + 1; i < GetCount(); ++i) 
+	{
         CControlUI* p = GetItemAt(i);
-        pListItem = static_cast<IListItemUI*>(p->GetInterface(_T("ListItem")));
-        if( pListItem != NULL ) {
-            pListItem->SetIndex(i);
+        pMenuItem = static_cast<CMenuElementUI*>(p->GetInterface(_T("MenuItem")));
+        if (pMenuItem) 
+		{
+            pMenuItem->SetIndex(i);
         }
     }
     if( m_iCurSel >= iIndex ) m_iCurSel += 1;
@@ -395,43 +628,52 @@ bool CMenuUI::AddAt(CControlUI* pControl, int iIndex)
 bool CMenuUI::Remove(CControlUI* pControl)
 {
     int iIndex = GetItemIndex(pControl);
+	int i;
+
     if (iIndex == -1) return false;
 
     if (!CContainerUI::RemoveAt(iIndex)) return false;
 
-    for(int i = iIndex; i < GetCount(); ++i) {
+    for (i = iIndex; i < GetCount(); ++i) 
+	{
         CControlUI* p = GetItemAt(i);
-        IListItemUI* pListItem = static_cast<IListItemUI*>(p->GetInterface(_T("ListItem")));
-        if( pListItem != NULL ) {
-            pListItem->SetIndex(i);
+        CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(p->GetInterface(_T("MenuItem")));
+        if (pMenuItem) 
+		{
+            pMenuItem->SetIndex(i);
         }
     }
 
-    if( iIndex == m_iCurSel && m_iCurSel >= 0 ) {
+    if (iIndex == m_iCurSel && m_iCurSel >= 0 ) 
+	{
         int iSel = m_iCurSel;
         m_iCurSel = -1;
         SelectItem(FindSelectable(iSel, false));
     }
-    else if( iIndex < m_iCurSel ) m_iCurSel -= 1;
+    else if (iIndex < m_iCurSel) m_iCurSel -= 1;
     return true;
 }
 
 bool CMenuUI::RemoveAt(int iIndex)
 {
+	int i;
+
     if (!CContainerUI::RemoveAt(iIndex)) return false;
 
-    for(int i = iIndex; i < GetCount(); ++i) {
+    for (i = iIndex; i < GetCount(); ++i) 
+	{
         CControlUI* p = GetItemAt(i);
-        IListItemUI* pListItem = static_cast<IListItemUI*>(p->GetInterface(_T("ListItem")));
-        if( pListItem != NULL ) pListItem->SetIndex(i);
+        CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(p->GetInterface(_T("MenuItem")));
+        if (pMenuItem) pMenuItem->SetIndex(i);
     }
 
-    if( iIndex == m_iCurSel && m_iCurSel >= 0 ) {
+    if (iIndex == m_iCurSel && m_iCurSel >= 0) 
+	{
         int iSel = m_iCurSel;
         m_iCurSel = -1;
         SelectItem(FindSelectable(iSel, false));
     }
-    else if( iIndex < m_iCurSel ) m_iCurSel -= 1;
+    else if (iIndex < m_iCurSel) m_iCurSel -= 1;
     return true;
 }
 
@@ -553,9 +795,7 @@ bool CMenuUI::Activate()
 
 CStdString CMenuUI::GetText() const
 {
-    if( m_iCurSel < 0 ) return _T("");
-    CControlUI* pControl = static_cast<CControlUI*>(m_items[m_iCurSel]);
-    return pControl->GetText();
+    return m_sText;
 }
 
 void CMenuUI::SetEnabled(bool bEnable)
