@@ -60,6 +60,7 @@
 #include "UIContainer.h"
 #include "UIList.h"
 #include "UICombo.h"
+#include "UIMenu.h"
 #include "UICommonControls.h"
 #include "UIActiveX.h"
 #include "UIRichEdit.h"
