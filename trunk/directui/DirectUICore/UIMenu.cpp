@@ -235,68 +235,15 @@ void CMenuElementUI::CreateMenuWnd()
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
-void CMenuWnd::Init(CMenuUI* pOwner)
-{
-	int i;
-	int cyFixed = 0;
-
-    m_pOwner = pOwner;
-    m_pLayout = NULL;
-    m_iOldSel = m_pOwner->GetCurSel();
-
-    // Position the popup window in absolute space
-    SIZE szDrop = m_pOwner->GetDropBoxSize();
-    RECT rcOwner = pOwner->GetPos();
-    RECT rc = rcOwner;
-    rc.top = rc.bottom;
-    rc.bottom = rc.top + szDrop.cy;
-    if (0 < szDrop.cx) rc.right = rc.left + szDrop.cx;
-
-    SIZE szAvailable = {rc.right - rc.left, rc.bottom - rc.top};
-    for (i = 0; i < pOwner->GetCount(); i++) 
-	{
-        CControlUI* pControl = static_cast<CControlUI*>(pOwner->GetItemAt(i));
-        if (!pControl->IsVisible()) continue;
-        SIZE sz = pControl->EstimateSize(szAvailable);
-        cyFixed += sz.cy;
-    }
-    cyFixed += 4;
-    rc.bottom = rc.top + MIN(cyFixed, szDrop.cy);
-
-    ::MapWindowRect(pOwner->GetManager()->GetPaintWindow(), HWND_DESKTOP, &rc);
-
-    MONITORINFO oMonitor = {};
-    oMonitor.cbSize = sizeof(oMonitor);
-    ::GetMonitorInfo(::MonitorFromWindow(*this, MONITOR_DEFAULTTOPRIMARY), &oMonitor);
-    CRect rcWork = oMonitor.rcWork;
-    if (rc.bottom > rcWork.bottom) 
-	{
-        rc.left = rcOwner.left;
-        rc.right = rcOwner.right;
-        if (0 < szDrop.cx) rc.right = rc.left + szDrop.cx;
-        rc.top = rcOwner.top - MIN(cyFixed, szDrop.cy);
-        rc.bottom = rcOwner.top;
-        ::MapWindowRect(pOwner->GetManager()->GetPaintWindow(), HWND_DESKTOP, &rc);
-    }
-    
-    Create(pOwner->GetManager()->GetPaintWindow(), NULL, WS_POPUP, WS_EX_TOOLWINDOW, rc);
-    // HACK: Don't deselect the parent's caption
-    HWND hWndParent = m_hWnd;
-    while (::GetParent(hWndParent) != NULL) hWndParent = ::GetParent(hWndParent);
-    ::ShowWindow(m_hWnd, SW_SHOW);
-    ::SendMessage(hWndParent, WM_NCACTIVATE, TRUE, 0L);
-}
-
-
-void CMenuWnd::Init(CMenuElementUI* pSubOwner, POINT point)
+void CMenuWnd::Init(CMenuElementUI* pOwner, POINT point)
 {
 	m_BasedPoint = point;
-    m_pSubOwner = pSubOwner;
+    m_pOwner = pOwner;
     m_pLayout = NULL;
 
 	//s_context_menu_observer.AddReceiver(this);
 
-	Create(m_pSubOwner->GetManager()->GetPaintWindow(), NULL, WS_POPUP, WS_EX_TOOLWINDOW | WS_EX_TOPMOST, CRect());
+	Create(m_pOwner->GetManager()->GetPaintWindow(), NULL, WS_POPUP, WS_EX_TOOLWINDOW | WS_EX_TOPMOST, CRect());
     // HACK: Don't deselect the parent's caption
     HWND hWndParent = m_hWnd;
     while( ::GetParent(hWndParent) != NULL ) hWndParent = ::GetParent(hWndParent);
@@ -344,7 +291,6 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         m_pLayout->SetBorderSize(1);
         m_pLayout->SetAutoDestroy(false);
         m_pLayout->EnableScrollBar();
-        m_pLayout->ApplyAttributeList(m_pOwner->GetDropBoxAttributeList());
         for (i = 0; i < m_pOwner->GetCount(); i++) 
 		{
             m_pLayout->Add(static_cast<CControlUI*>(m_pOwner->GetItemAt(i)));
@@ -371,7 +317,6 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
         switch( wParam ) {
         case VK_ESCAPE:
-            m_pOwner->SelectItem(m_iOldSel, true);
             EnsureVisible(m_iOldSel);
             // FALL THROUGH...
         case VK_RETURN:
@@ -382,7 +327,6 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             event.Type = UIEVENT_KEYDOWN;
             event.chKey = (TCHAR)wParam;
             m_pOwner->DoEvent(event);
-            EnsureVisible(m_pOwner->GetCurSel());
             return 0;
         }
     }
@@ -395,7 +339,6 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         event.lParam = lParam;
         event.dwTimestamp = ::GetTickCount();
         m_pOwner->DoEvent(event);
-        EnsureVisible(m_pOwner->GetCurSel());
         return 0;
     }
     else if (uMsg == WM_KILLFOCUS) 
@@ -410,8 +353,6 @@ LRESULT CMenuWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CMenuWnd::EnsureVisible(int iIndex)
 {
-    if (m_pOwner->GetCurSel() < 0) return;
-    m_pLayout->FindSelectable(m_pOwner->GetCurSel(), false);
     RECT rcItem = m_pLayout->GetItemAt(iIndex)->GetPos();
     RECT rcList = m_pLayout->GetPos();
     CScrollBarUI* pHorizontalScrollBar = m_pLayout->GetHorizontalScrollBar();
@@ -443,26 +384,7 @@ UINT CMenuWnd::GetClassStyle() const
 CMenuUI::CMenuUI() : m_pWindow(NULL), m_iCurSel(-1), m_uButtonState(0), 
 	m_uTextStyle(DT_VCENTER), m_dwTextColor(0), m_dwDisabledTextColor(0), m_iFont(-1)
 {
-    m_szDropBox = CSize(0, 150);
     ::ZeroMemory(&m_rcTextPadding, sizeof(m_rcTextPadding));
-
-    m_ListInfo.nColumns = 0;
-    m_ListInfo.nFont = -1;
-    m_ListInfo.uTextStyle = DT_VCENTER;
-    m_ListInfo.dwTextColor = 0xFF000000;
-    m_ListInfo.dwBkColor = 0;
-    m_ListInfo.bAlternateBk = false;
-    m_ListInfo.dwSelectedTextColor = 0xFF000000;
-    m_ListInfo.dwSelectedBkColor = 0xFFC1E3FF;
-    m_ListInfo.dwHotTextColor = 0xFF000000;
-    m_ListInfo.dwHotBkColor = 0xFFE9F5FF;
-    m_ListInfo.dwDisabledTextColor = 0xFFCCCCCC;
-    m_ListInfo.dwDisabledBkColor = 0xFFFFFFFF;
-    m_ListInfo.dwLineColor = 0;
-    m_ListInfo.bShowHtml = false;
-    m_ListInfo.bMultiExpandable = false;
-    ::ZeroMemory(&m_ListInfo.rcTextPadding, sizeof(m_ListInfo.rcTextPadding));
-    ::ZeroMemory(&m_ListInfo.rcColumn, sizeof(m_ListInfo.rcColumn));
 }
 
 LPCTSTR CMenuUI::GetClass() const
@@ -787,8 +709,7 @@ bool CMenuUI::Activate()
     if (m_pWindow) return true;
     m_pWindow = new CMenuWnd();
     ASSERT(m_pWindow);
-    m_pWindow->Init(this);
-    if (m_pManager) m_pManager->SendNotify(this, _T("dropdown"));
+    m_pWindow->Init(NULL, CPoint());
     Invalidate();
     return true;
 }
@@ -890,186 +811,6 @@ void CMenuUI::SetDisabledImage(LPCTSTR pStrImage)
     Invalidate();
 }
 
-TListInfoUI* CMenuUI::GetListInfo()
-{
-    return &m_ListInfo;
-}
-
-void CMenuUI::SetItemFont(int index)
-{
-    m_ListInfo.nFont = index;
-    Invalidate();
-}
-
-void CMenuUI::SetItemTextStyle(UINT uStyle)
-{
-	m_ListInfo.uTextStyle = uStyle;
-	Invalidate();
-}
-
-RECT CMenuUI::GetItemTextPadding() const
-{
-	return m_ListInfo.rcTextPadding;
-}
-
-void CMenuUI::SetItemTextPadding(RECT rc)
-{
-    m_ListInfo.rcTextPadding = rc;
-    Invalidate();
-}
-
-void CMenuUI::SetItemTextColor(DWORD dwTextColor)
-{
-    m_ListInfo.dwTextColor = dwTextColor;
-    Invalidate();
-}
-
-void CMenuUI::SetItemBkColor(DWORD dwBkColor)
-{
-    m_ListInfo.dwBkColor = dwBkColor;
-}
-
-void CMenuUI::SetItemBkImage(LPCTSTR pStrImage)
-{
-    m_ListInfo.sBkImage = pStrImage;
-}
-
-DWORD CMenuUI::GetItemTextColor() const
-{
-	return m_ListInfo.dwTextColor;
-}
-
-DWORD CMenuUI::GetItemBkColor() const
-{
-	return m_ListInfo.dwBkColor;
-}
-
-LPCTSTR CMenuUI::GetItemBkImage() const
-{
-	return m_ListInfo.sBkImage;
-}
-
-bool CMenuUI::IsAlternateBk() const
-{
-    return m_ListInfo.bAlternateBk;
-}
-
-void CMenuUI::SetAlternateBk(bool bAlternateBk)
-{
-    m_ListInfo.bAlternateBk = bAlternateBk;
-}
-
-void CMenuUI::SetSelectedItemTextColor(DWORD dwTextColor)
-{
-    m_ListInfo.dwSelectedTextColor = dwTextColor;
-}
-
-void CMenuUI::SetSelectedItemBkColor(DWORD dwBkColor)
-{
-    m_ListInfo.dwSelectedBkColor = dwBkColor;
-}
-
-void CMenuUI::SetSelectedItemImage(LPCTSTR pStrImage)
-{
-	m_ListInfo.sSelectedImage = pStrImage;
-}
-
-DWORD CMenuUI::GetSelectedItemTextColor() const
-{
-	return m_ListInfo.dwSelectedTextColor;
-}
-
-DWORD CMenuUI::GetSelectedItemBkColor() const
-{
-	return m_ListInfo.dwSelectedBkColor;
-}
-
-LPCTSTR CMenuUI::GetSelectedItemImage() const
-{
-	return m_ListInfo.sSelectedImage;
-}
-
-void CMenuUI::SetHotItemTextColor(DWORD dwTextColor)
-{
-    m_ListInfo.dwHotTextColor = dwTextColor;
-}
-
-void CMenuUI::SetHotItemBkColor(DWORD dwBkColor)
-{
-    m_ListInfo.dwHotBkColor = dwBkColor;
-}
-
-void CMenuUI::SetHotItemImage(LPCTSTR pStrImage)
-{
-    m_ListInfo.sHotImage = pStrImage;
-}
-
-DWORD CMenuUI::GetHotItemTextColor() const
-{
-	return m_ListInfo.dwHotTextColor;
-}
-DWORD CMenuUI::GetHotItemBkColor() const
-{
-	return m_ListInfo.dwHotBkColor;
-}
-
-LPCTSTR CMenuUI::GetHotItemImage() const
-{
-	return m_ListInfo.sHotImage;
-}
-
-void CMenuUI::SetDisabledItemTextColor(DWORD dwTextColor)
-{
-    m_ListInfo.dwDisabledTextColor = dwTextColor;
-}
-
-void CMenuUI::SetDisabledItemBkColor(DWORD dwBkColor)
-{
-    m_ListInfo.dwDisabledBkColor = dwBkColor;
-}
-
-void CMenuUI::SetDisabledItemImage(LPCTSTR pStrImage)
-{
-    m_ListInfo.sDisabledImage = pStrImage;
-}
-
-DWORD CMenuUI::GetDisabledItemTextColor() const
-{
-	return m_ListInfo.dwDisabledTextColor;
-}
-
-DWORD CMenuUI::GetDisabledItemBkColor() const
-{
-	return m_ListInfo.dwDisabledBkColor;
-}
-
-LPCTSTR CMenuUI::GetDisabledItemImage() const
-{
-	return m_ListInfo.sDisabledImage;
-}
-
-DWORD CMenuUI::GetItemLineColor() const
-{
-	return m_ListInfo.dwLineColor;
-}
-
-void CMenuUI::SetItemLineColor(DWORD dwLineColor)
-{
-    m_ListInfo.dwLineColor = dwLineColor;
-}
-
-bool CMenuUI::IsItemShowHtml()
-{
-    return m_ListInfo.bShowHtml;
-}
-
-void CMenuUI::SetItemShowHtml(bool bShowHtml)
-{
-    if( m_ListInfo.bShowHtml == bShowHtml ) return;
-
-    m_ListInfo.bShowHtml = bShowHtml;
-    Invalidate();
-}
 
 void CMenuUI::SetPos(RECT rc)
 {
@@ -1097,98 +838,6 @@ void CMenuUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
     else if( _tcscmp(pstrName, _T("focusedimage")) == 0 ) SetFocusedImage(pstrValue);
     else if( _tcscmp(pstrName, _T("disabledimage")) == 0 ) SetDisabledImage(pstrValue);
     else if( _tcscmp(pstrName, _T("dropbox")) == 0 ) SetDropBoxAttributeList(pstrValue);
-	else if( _tcscmp(pstrName, _T("dropboxsize")) == 0)
-	{
-		SIZE szDropBoxSize = { 0 };
-		LPTSTR pstr = NULL;
-		szDropBoxSize.cx = _tcstol(pstrValue, &pstr, 10);  ASSERT(pstr);    
-		szDropBoxSize.cy = _tcstol(pstr + 1, &pstr, 10);    ASSERT(pstr);    
-		SetDropBoxSize(szDropBoxSize);
-	}
-    else if( _tcscmp(pstrName, _T("itemfont")) == 0 ) m_ListInfo.nFont = _ttoi(pstrValue);
-    else if( _tcscmp(pstrName, _T("itemalign")) == 0 ) {
-        if( _tcsstr(pstrValue, _T("left")) != NULL ) {
-            m_ListInfo.uTextStyle &= ~(DT_CENTER | DT_RIGHT);
-            m_ListInfo.uTextStyle |= DT_LEFT;
-        }
-        if( _tcsstr(pstrValue, _T("center")) != NULL ) {
-            m_ListInfo.uTextStyle &= ~(DT_LEFT | DT_RIGHT);
-            m_ListInfo.uTextStyle |= DT_CENTER;
-        }
-        if( _tcsstr(pstrValue, _T("right")) != NULL ) {
-            m_ListInfo.uTextStyle &= ~(DT_LEFT | DT_CENTER);
-            m_ListInfo.uTextStyle |= DT_RIGHT;
-        }
-    }
-    if( _tcscmp(pstrName, _T("itemtextpadding")) == 0 ) {
-        RECT rcTextPadding = { 0 };
-        LPTSTR pstr = NULL;
-        rcTextPadding.left = _tcstol(pstrValue, &pstr, 10);  ASSERT(pstr);    
-        rcTextPadding.top = _tcstol(pstr + 1, &pstr, 10);    ASSERT(pstr);    
-        rcTextPadding.right = _tcstol(pstr + 1, &pstr, 10);  ASSERT(pstr);    
-        rcTextPadding.bottom = _tcstol(pstr + 1, &pstr, 10); ASSERT(pstr);    
-        SetItemTextPadding(rcTextPadding);
-    }
-    else if( _tcscmp(pstrName, _T("itemtextcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetItemTextColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itembkcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetItemBkColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itembkimage")) == 0 ) SetItemBkImage(pstrValue);
-    else if( _tcscmp(pstrName, _T("itemaltbk")) == 0 ) SetAlternateBk(_tcscmp(pstrValue, _T("true")) == 0);
-    else if( _tcscmp(pstrName, _T("itemselectedtextcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetSelectedItemTextColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itemselectedbkcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetSelectedItemBkColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itemselectedimage")) == 0 ) SetSelectedItemImage(pstrValue);
-    else if( _tcscmp(pstrName, _T("itemhottextcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetHotItemTextColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itemhotbkcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetHotItemBkColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itemhotimage")) == 0 ) SetHotItemImage(pstrValue);
-    else if( _tcscmp(pstrName, _T("itemdisabledtextcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetDisabledItemTextColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itemdisabledbkcolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetDisabledItemBkColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itemdisabledimage")) == 0 ) SetDisabledItemImage(pstrValue);
-    else if( _tcscmp(pstrName, _T("itemlinecolor")) == 0 ) {
-        if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
-        LPTSTR pstr = NULL;
-        DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
-        SetItemLineColor(clrColor);
-    }
-    else if( _tcscmp(pstrName, _T("itemshowhtml")) == 0 ) SetItemShowHtml(_tcscmp(pstrValue, _T("true")) == 0);
     else CContainerUI::SetAttribute(pstrName, pstrValue);
 }
 
