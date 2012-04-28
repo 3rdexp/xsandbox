@@ -131,6 +131,70 @@ protected:
     TListInfoUI m_ListInfo;
 };
 
+class CMenuElementUI;
+
+class CMenuWnd : public CWindowWnd
+{
+public:
+    void Init(CMenuUI* pOwner);
+	void Init(CMenuElementUI* pSubOwner, POINT point);
+    LPCTSTR GetWindowClassName() const;
+    void OnFinalMessage(HWND hWnd);
+
+    LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    void EnsureVisible(int iIndex);
+    void Scroll(int dx, int dy);
+
+#if(_WIN32_WINNT >= 0x0501)
+	virtual UINT GetClassStyle() const;
+#endif
+
+public:
+    CPaintManagerUI m_pm;
+    CMenuUI* m_pOwner;
+	CMenuElementUI* m_pSubOwner;
+    CVerticalLayoutUI* m_pLayout;
+	POINT m_BasedPoint;
+    int m_iOldSel;
+};
+
+struct ContextMenuParam
+{
+	// 1: remove all
+	// 2: remove the sub menu
+	WPARAM wParam;
+	HWND hWnd;
+};
+
+class CMenuElementUI : public CListContainerElementUI
+{
+	friend CMenuWnd;
+public:
+    CMenuElementUI();
+	~CMenuElementUI();
+
+    LPCTSTR GetClass() const;
+    LPVOID GetInterface(LPCTSTR pstrName);
+
+    void DoPaint(HDC hDC, const RECT& rcPaint);
+
+	void DrawItemText(HDC hDC, const RECT& rcItem);
+
+	SIZE EstimateSize(SIZE szAvailable);
+
+	bool Activate();
+
+	void DoEvent(TEventUI& event);
+
+	CMenuWnd* GetMenuWnd();
+
+	void CreateMenuWnd();
+
+protected:
+	CMenuWnd* m_pWindow;
+};
+
 } // namespace DirectUICore
 
 #endif // __UIMENU_H__
