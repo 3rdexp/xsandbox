@@ -64,7 +64,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*l
 {
     CPaintManagerUI::SetInstance(hInstance);
 	CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath() + _T("skin"));
-	CPaintManagerUI::SetResourceZip(_T("ControlFactoryRes.zip"));
+	CPaintManagerUI::SetResourceZip(_T("ControlFactoryLightRes.zip"));
 
     HRESULT Hr = ::CoInitialize(NULL);
     if (FAILED(Hr)) return 0;
