@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <objbase.h>
+#include <vector>
 
 #include "..\DirectUICore\UIlib.h"
 
@@ -28,11 +29,25 @@ public:
     CFrameWindowWnd() { };
     LPCTSTR GetWindowClassName() const { return _T("UIMainFrame"); };
 
+	void OnPrepare() 
+    {
+		std::vector<CStdString> src;
+		src.push_back("Windows");
+		src.push_back("Win32");
+		src.push_back("DirectUI");
+        CEditUI* pEdit = static_cast<CEditUI*>(m_pm.FindControl(_T("edit1")));
+		if (pEdit) 
+		{
+			pEdit->SetAutoCompleteSource(src);
+		}
+    }
+
     void Notify(TNotifyUI& msg)
     {
-		if (msg.sType == _T("click")) 
+		if (msg.sType == _T("windowinit")) 
 		{
-        }
+			OnPrepare();
+		}
     }
 
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 
+#include <algorithm>
+
 namespace DirectUICore 
 {
 
@@ -24,7 +26,6 @@ protected:
     HBRUSH m_hBkBrush;
     bool m_bInit;
 };
-
 
 CEditWnd::CEditWnd() : m_pOwner(NULL), m_hBkBrush(NULL), m_bInit(false) {}
 
@@ -86,16 +87,25 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT lRes = 0;
     BOOL bHandled = TRUE;
-    if( uMsg == WM_KILLFOCUS ) lRes = OnKillFocus(uMsg, wParam, lParam, bHandled);
-    else if( uMsg == OCM_COMMAND ) {
-        if( GET_WM_COMMAND_CMD(wParam, lParam) == EN_CHANGE ) lRes = OnEditChanged(uMsg, wParam, lParam, bHandled);
-        else if( GET_WM_COMMAND_CMD(wParam, lParam) == EN_UPDATE ) {
+	if (uMsg == WM_KILLFOCUS) 
+	{
+		lRes = OnKillFocus(uMsg, wParam, lParam, bHandled);
+	}
+    else if (uMsg == OCM_COMMAND) 
+	{
+		if (GET_WM_COMMAND_CMD(wParam, lParam) == EN_CHANGE) 
+		{
+			lRes = OnEditChanged(uMsg, wParam, lParam, bHandled);
+		}
+        else if (GET_WM_COMMAND_CMD(wParam, lParam) == EN_UPDATE) 
+		{
             RECT rcClient;
             ::GetClientRect(m_hWnd, &rcClient);
             ::InvalidateRect(m_hWnd, &rcClient, FALSE);
         }
     }
-    else if( uMsg == WM_KEYDOWN && TCHAR(wParam) == VK_RETURN ) {
+	else if (uMsg == WM_KEYDOWN && TCHAR(wParam) == VK_RETURN) 
+	{
         m_pOwner->GetManager()->SendNotify(m_pOwner, _T("return"));
     }
     else if( uMsg == OCM__BASE + WM_CTLCOLOREDIT  || uMsg == OCM__BASE + WM_CTLCOLORSTATIC ) {
@@ -123,26 +133,22 @@ LRESULT CEditWnd::OnKillFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHa
 
 LRESULT CEditWnd::OnEditChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-    if( !m_bInit ) return 0;
-    if( m_pOwner == NULL ) return 0;
+    if (!m_bInit) return 0;
+    if (m_pOwner == NULL) return 0;
     // Copy text back
     int cchLen = ::GetWindowTextLength(m_hWnd) + 1;
     LPTSTR pstr = static_cast<LPTSTR>(_alloca(cchLen * sizeof(TCHAR)));
     ASSERT(pstr);
-    if( pstr == NULL ) return 0;
+    if (pstr == NULL) return 0;
     ::GetWindowText(m_hWnd, pstr, cchLen);
     m_pOwner->m_sText = pstr;
     m_pOwner->GetManager()->SendNotify(m_pOwner, _T("textchanged"));
     return 0;
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////
-//
-//
-
 CEditUI::CEditUI() : m_pWindow(NULL), m_uMaxChar(255), m_bReadOnly(false), 
-m_bPasswordMode(false), m_cPasswordChar(_T('*')), m_uButtonState(0), m_dwEditbkColor(0xFFFFFFFF)
+m_bPasswordMode(false), m_cPasswordChar(_T('*')), m_uButtonState(0), 
+m_dwEditbkColor(0xFFFFFFFF), m_pAutoCompleteMode(None) 
 {
     SetTextPadding(CRect(4, 3, 4, 3));
     SetBkColor(0xFFFFFFFF);
@@ -166,14 +172,37 @@ UINT CEditUI::GetControlFlags() const
     return UIFLAG_SETCURSOR | UIFLAG_TABSTOP;
 }
 
+void CEditUI::m_SetAutoComplete() 
+{
+	std::vector<CStdString>::iterator iter;
+
+	m_sText.MakeLower();
+	// sort by asc
+	std::sort(m_pAutoCompleteSource.begin(), m_pAutoCompleteSource.end());
+	for (iter = m_pAutoCompleteSource.begin(); iter != m_pAutoCompleteSource.end(); iter++) 
+	{
+		(*iter).MakeLower();
+		if (-1 != (*iter).Find(m_sText.GetData())) 
+		{
+			m_sText = *iter;
+			break;
+		}
+	}
+}
+
 void CEditUI::DoEvent(TEventUI& event)
 {
-    if( !IsMouseEnabled() && event.Type > UIEVENT__MOUSEBEGIN && event.Type < UIEVENT__MOUSEEND ) {
+    if( !IsMouseEnabled() && event.Type > UIEVENT__MOUSEBEGIN && event.Type < UIEVENT__MOUSEEND ) 
+	{
         if( m_pParent != NULL ) m_pParent->DoEvent(event);
         else CLabelUI::DoEvent(event);
         return;
     }
 
+	if (event.Type == UIEVENT_KEYDOWN && IsEnabled()) 
+	{
+		m_SetAutoComplete();
+	}
     if( event.Type == UIEVENT_SETCURSOR && IsEnabled() )
     {
         ::SetCursor(::LoadCursor(NULL, MAKEINTRESOURCE(IDC_IBEAM)));
@@ -278,7 +307,7 @@ void CEditUI::SetEnabled(bool bEnable)
 void CEditUI::SetText(LPCTSTR pstrText)
 {
     m_sText = pstrText;
-    if( m_pWindow != NULL ) Edit_SetText(*m_pWindow, m_sText);
+    if (m_pWindow) Edit_SetText(*m_pWindow, m_sText);
     Invalidate();
 }
 
@@ -330,6 +359,28 @@ void CEditUI::SetPasswordChar(TCHAR cPasswordChar)
 TCHAR CEditUI::GetPasswordChar() const
 {
     return m_cPasswordChar;
+}
+
+void CEditUI::SetAutoCompleteMode(AutoCompleteMode pAutoCompleteMode) 
+{
+	m_pAutoCompleteMode = pAutoCompleteMode;
+	Invalidate();
+}
+
+AutoCompleteMode CEditUI::GetAutoCompleteMode() const 
+{
+	return m_pAutoCompleteMode;
+}
+
+void CEditUI::SetAutoCompleteSource(std::vector<CStdString> pAutoCompleteSource) 
+{
+	m_pAutoCompleteSource = pAutoCompleteSource;
+	Invalidate();
+}
+
+std::vector<CStdString> CEditUI::GetAutoCompleteSource()  
+{
+	return m_pAutoCompleteSource;
 }
 
 LPCTSTR CEditUI::GetNormalImage()
@@ -437,12 +488,20 @@ void CEditUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
     else if( _tcscmp(pstrName, _T("hotimage")) == 0 ) SetHotImage(pstrValue);
     else if( _tcscmp(pstrName, _T("focusedimage")) == 0 ) SetFocusedImage(pstrValue);
     else if( _tcscmp(pstrName, _T("disabledimage")) == 0 ) SetDisabledImage(pstrValue);
-    else if( _tcscmp(pstrName, _T("nativebkcolor")) == 0 ) {
+    else if( _tcscmp(pstrName, _T("nativebkcolor")) == 0 ) 
+	{
         if( *pstrValue == _T('#')) pstrValue = ::CharNext(pstrValue);
         LPTSTR pstr = NULL;
         DWORD clrColor = _tcstoul(pstrValue, &pstr, 16);
         SetNativeEditBkColor(clrColor);
     }
+	else if (_tcscmp(pstrName, _T("autocompletemode")) == 0) 
+	{
+		if (_tcscmp(pstrValue, _T("None")) == 0) SetAutoCompleteMode(None);
+		else if (_tcscmp(pstrValue, _T("Append")) == 0) SetAutoCompleteMode(Append);
+		else if (_tcscmp(pstrValue, _T("Suggest")) == 0) SetAutoCompleteMode(Suggest);
+		else if (_tcscmp(pstrValue, _T("SuggestAppend")) == 0) SetAutoCompleteMode(SuggestAppend);
+	}
     else CLabelUI::SetAttribute(pstrName, pstrValue);
 }
 
