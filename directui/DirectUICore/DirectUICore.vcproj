@@ -198,11 +198,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\UICombo.cpp"
+				RelativePath=".\UIButton.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\UICommonControls.cpp"
+				RelativePath=".\UICombo.cpp"
 				>
 			</File>
 			<File
@@ -214,11 +214,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UIDateTime.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UIDelegate.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\UIDlgBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UIEdit.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UILabel.cpp"
 				>
 			</File>
 			<File
@@ -242,11 +254,35 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UIOption.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UIProgress.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UIRender.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\UIRichEdit.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UIScrollBar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UISlider.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UIText.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UITool.cpp"
 				>
 			</File>
 			<File
@@ -280,11 +316,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\UICombo.h"
+				RelativePath=".\UIButton.h"
 				>
 			</File>
 			<File
-				RelativePath=".\UICommonControls.h"
+				RelativePath=".\UICombo.h"
 				>
 			</File>
 			<File
@@ -296,11 +332,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UIDateTime.h"
+				>
+			</File>
+			<File
 				RelativePath=".\UIDelegate.h"
 				>
 			</File>
 			<File
 				RelativePath=".\UIDlgBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UIEdit.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UILabel.h"
 				>
 			</File>
 			<File
@@ -324,11 +372,35 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UIOption.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UIProgress.h"
+				>
+			</File>
+			<File
 				RelativePath=".\UIRender.h"
 				>
 			</File>
 			<File
 				RelativePath=".\UIRichEdit.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UIScrollBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UISlider.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UIText.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UITool.h"
 				>
 			</File>
 		</Filter>
