@@ -278,8 +278,8 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
                 if( _tcscmp(pstrClass, _T("Edit")) == 0 )                   pControl = new CEditUI;
                 else if( _tcscmp(pstrClass, _T("List")) == 0 )              pControl = new CListUI;
                 else if( _tcscmp(pstrClass, _T("Text")) == 0 )              pControl = new CTextUI;
-				else if (_tcscmp(pstrClass, _T("Menu")) == 0)				pControl = new CMenuUI;
-                break;
+				else if( _tcscmp(pstrClass, _T("Menu")) == 0 )              pControl = new CMenuUI;
+				break;
             case 5:
                 if( _tcscmp(pstrClass, _T("Combo")) == 0 )                  pControl = new CComboUI;
                 else if( _tcscmp(pstrClass, _T("Label")) == 0 )             pControl = new CLabelUI;
@@ -287,7 +287,7 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
             case 6:
                 if( _tcscmp(pstrClass, _T("Button")) == 0 )                 pControl = new CButtonUI;
                 else if( _tcscmp(pstrClass, _T("Option")) == 0 )            pControl = new COptionUI;
-                else if( _tcscmp(pstrClass, _T("Slider")) == 0 )            pControl = new CSliderUI;
+				else if( _tcscmp(pstrClass, _T("Slider")) == 0 )            pControl = new CSliderUI;
                 break;
             case 7:
 				if( _tcscmp(pstrClass, _T("Control")) == 0 )           pControl = new CControlUI;
@@ -295,24 +295,24 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
                 break;
             case 8:
                 if( _tcscmp(pstrClass, _T("Progress")) == 0 )               pControl = new CProgressUI;
-                else if(  _tcscmp(pstrClass, _T("RichEdit")) == 0 )         pControl = new CRichEditUI;
-				// add by:zjie
+                else if (_tcscmp(pstrClass, _T("RichEdit")) == 0)			pControl = new CRichEditUI;
 				else if (_tcscmp(pstrClass, _T("CheckBox")) == 0)			pControl = new CCheckBoxUI;
 				else if (_tcscmp(pstrClass, _T("ComboBox")) == 0)			pControl = new CComboBoxUI;
 				else if (_tcscmp(pstrClass, _T("DateTime")) == 0)			pControl = new CDateTimeUI;
-				// add by:zjie
-                break;
+				break;
             case 9:
-                if( _tcscmp(pstrClass, _T("Container")) == 0 )              pControl = new CContainerUI;
+				if( _tcscmp(pstrClass, _T("Container")) == 0 )              pControl = new CContainerUI;
                 else if( _tcscmp(pstrClass, _T("TabLayout")) == 0 )         pControl = new CTabLayoutUI;
                 else if( _tcscmp(pstrClass, _T("ScrollBar")) == 0 )         pControl = new CScrollBarUI; 
-                break;
+                else if (_tcscmp(pstrClass, _T("MenuStrip")) == 0)			pControl = new CMenuStripUI;
+				else if (_tcscmp(pstrClass, _T("ToolStrip")) == 0)          pControl = new CToolStripUI;
+				break;
             case 10:
                 if( _tcscmp(pstrClass, _T("ListHeader")) == 0 )             pControl = new CListHeaderUI;
                 else if( _tcscmp(pstrClass, _T("TileLayout")) == 0 )        pControl = new CTileLayoutUI;
 				break;
 			case 11:
-				if (_tcscmp(pstrClass, _T("MenuElement")) == 0)             pControl = new CMenuElementUI;
+				if (_tcscmp(pstrClass, _T("MenuElement")) == 0)				pControl = new CMenuElementUI;
 				break;
             case 14:
                 if( _tcscmp(pstrClass, _T("VerticalLayout")) == 0 )         pControl = new CVerticalLayoutUI;
@@ -320,6 +320,7 @@ CControlUI* CDialogBuilder::_Parse(CMarkupNode* pRoot, CControlUI* pParent, CPai
                 break;
             case 15:
                 if( _tcscmp(pstrClass, _T("ListTextElement")) == 0 )        pControl = new CListTextElementUI;
+				else if (_tcscmp(pstrClass, _T("ToolStripButton")) == 0)	pControl = new CToolStripButtonUI;
                 break;
             case 16:
                 if( _tcscmp(pstrClass, _T("HorizontalLayout")) == 0 )       pControl = new CHorizontalLayoutUI;

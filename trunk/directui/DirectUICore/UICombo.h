@@ -3,9 +3,8 @@
 
 #pragma once
 
-namespace DirectUICore {
-/////////////////////////////////////////////////////////////////////////////////////
-//
+namespace DirectUICore 
+{
 
 class CComboWnd;
 
@@ -115,6 +114,22 @@ protected:
     CStdString m_sDisabledImage;
 
     TListInfoUI m_ListInfo;
+};
+
+class UILIB_API CComboBoxUI : public CComboUI
+{
+public:
+	CComboBoxUI();
+	LPCTSTR GetClass() const;
+
+	void SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue);
+
+	void PaintText(HDC hDC);
+	void PaintStatusImage(HDC hDC);
+
+protected:
+	CStdString m_sArrowImage;
+	int        m_nArrowWidth;
 };
 
 } // namespace DirectUICore

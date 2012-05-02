@@ -1,6 +1,20 @@
 #include "StdAfx.h"
 
-namespace DirectUICore {
+namespace DirectUICore 
+{
+
+CMenuStripUI::CMenuStripUI() {}
+
+LPCTSTR CMenuStripUI::GetClass() const
+{
+	return _T("CMenuStripUI");
+}
+
+LPVOID CMenuStripUI::GetInterface(LPCTSTR pstrName)
+{
+    if (_tcsicmp(pstrName, _T("MenuStrip")) == 0) return static_cast<CMenuStripUI*>(this);    
+    return CHorizontalLayoutUI::GetInterface(pstrName);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -381,7 +395,7 @@ UINT CMenuWnd::GetClassStyle() const
 ////////////////////////////////////////////////////////
 
 
-CMenuUI::CMenuUI() : m_pWindow(NULL), m_iCurSel(-1), m_uButtonState(0), 
+CMenuUI::CMenuUI() : m_pWindow(NULL), m_uButtonState(0), 
 	m_uTextStyle(DT_VCENTER), m_dwTextColor(0), m_dwDisabledTextColor(0), m_iFont(-1)
 {
     ::ZeroMemory(&m_rcTextPadding, sizeof(m_rcTextPadding));
@@ -395,78 +409,14 @@ LPCTSTR CMenuUI::GetClass() const
 LPVOID CMenuUI::GetInterface(LPCTSTR pstrName)
 {
 	if (_tcscmp(pstrName, _T("Menu")) == 0) return static_cast<CMenuUI*>(this);
-    //if (_tcscmp(pstrName, _T("IListOwner")) == 0) return static_cast<IListOwnerUI*>(this);
-    return CContainerUI::GetInterface(pstrName);
-}
-
-UINT CMenuUI::GetControlFlags() const
-{
-    return UIFLAG_TABSTOP;
-}
-
-void CMenuUI::DoInit()
-{
-}
-
-int CMenuUI::GetCurSel() const
-{
-    return m_iCurSel;
-}
-
-bool CMenuUI::SelectItem(int iIndex, bool bTakeFocus)
-{
-    if (m_pWindow) m_pWindow->Close();
-    if (iIndex == m_iCurSel) return true;
-    int iOldSel = m_iCurSel;
-    if (0 <= m_iCurSel) 
-	{
-        CControlUI* pControl = static_cast<CControlUI*>(m_items[m_iCurSel]);
-        if (!pControl) return false;
-        CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(pControl->GetInterface(_T("MenuItem")));
-        if (pMenuItem) pMenuItem->Select(false);
-        m_iCurSel = -1;
-    }
-    if (iIndex < 0) return false;
-    if (m_items.GetSize() == 0) return false;
-    if (iIndex >= m_items.GetSize()) iIndex = m_items.GetSize() - 1;
-    CControlUI* pControl = static_cast<CControlUI*>(m_items[iIndex]);
-    if (!pControl || !pControl->IsVisible() || !pControl->IsEnabled()) return false;
-    CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(pControl->GetInterface(_T("MenuItem")));
-    if (pMenuItem == NULL) return false;
-    m_iCurSel = iIndex;
-    if (m_pWindow || bTakeFocus ) pControl->SetFocus();
-    pMenuItem->Select(true);
-    if (m_pManager) m_pManager->SendNotify(this, _T("itemselect"), m_iCurSel, iOldSel);
-    Invalidate();
-
-    return true;
+    return CListUI::GetInterface(pstrName);
 }
 
 bool CMenuUI::SetItemIndex(CControlUI* pControl, int iIndex)
 {
-    int iOrginIndex = GetItemIndex(pControl);
-	int i;
-
-    if (iOrginIndex == -1) return false;
-    if (iOrginIndex == iIndex) return true;
-
-    CMenuElementUI* pSelectedMenuItem = NULL;
-    if (0 <= m_iCurSel) pSelectedMenuItem = 
-        static_cast<CMenuElementUI*>(GetItemAt(m_iCurSel)->GetInterface(_T("MenuItem")));
-    if (!CContainerUI::SetItemIndex(pControl, iIndex)) return false;
-    int iMinIndex = min(iOrginIndex, iIndex);
-    int iMaxIndex = max(iOrginIndex, iIndex);
-    for (i = iMinIndex; i < iMaxIndex + 1; ++i) 
-	{
-        CControlUI* p = GetItemAt(i);
-        CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(p->GetInterface(_T("MenuItem")));
-        if (pMenuItem) 
-		{
-            pMenuItem->SetIndex(i);
-        }
-    }
-    if (0 <= m_iCurSel && pSelectedMenuItem) m_iCurSel = pSelectedMenuItem->GetIndex();
-    return true;
+    CMenuElementUI* pMenuItem = static_cast<CMenuElementUI*>(pControl->GetInterface("MenuElement"));
+	if (pMenuItem == NULL) return false;
+	return __super::SetItemIndex(pControl, iIndex);
 }
 
 void CMenuUI::SetTextStyle(UINT uStyle)
@@ -725,26 +675,6 @@ void CMenuUI::SetEnabled(bool bEnable)
     if( !IsEnabled() ) m_uButtonState = 0;
 }
 
-CStdString CMenuUI::GetDropBoxAttributeList()
-{
-    return m_sDropBoxAttributes;
-}
-
-void CMenuUI::SetDropBoxAttributeList(LPCTSTR pstrList)
-{
-    m_sDropBoxAttributes = pstrList;
-}
-
-SIZE CMenuUI::GetDropBoxSize() const
-{
-    return m_szDropBox;
-}
-
-void CMenuUI::SetDropBoxSize(SIZE szDropBox)
-{
-    m_szDropBox = szDropBox;
-}
-
 RECT CMenuUI::GetTextPadding() const
 {
     return m_rcTextPadding;
@@ -837,7 +767,6 @@ void CMenuUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
     else if( _tcscmp(pstrName, _T("pushedimage")) == 0 ) SetPushedImage(pstrValue);
     else if( _tcscmp(pstrName, _T("focusedimage")) == 0 ) SetFocusedImage(pstrValue);
     else if( _tcscmp(pstrName, _T("disabledimage")) == 0 ) SetDisabledImage(pstrValue);
-    else if( _tcscmp(pstrName, _T("dropbox")) == 0 ) SetDropBoxAttributeList(pstrValue);
     else CContainerUI::SetAttribute(pstrName, pstrValue);
 }
 

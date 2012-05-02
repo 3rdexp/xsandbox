@@ -3,13 +3,23 @@
 
 #pragma once
 
-namespace DirectUICore {
+namespace DirectUICore 
+{
+
+class UILIB_API CMenuStripUI : public CHorizontalLayoutUI 
+{
+public:
+	CMenuStripUI();
+	LPCTSTR GetClass() const;
+    LPVOID GetInterface(LPCTSTR pstrName);
+};
+
 /////////////////////////////////////////////////////////////////////////////////////
 //
 
 class CMenuWnd;
 
-class UILIB_API CMenuUI : public CContainerUI 
+class UILIB_API CMenuUI : public CListUI 
 {
     friend class CMenuWnd;
 public:
@@ -18,19 +28,8 @@ public:
     LPCTSTR GetClass() const;
     LPVOID GetInterface(LPCTSTR pstrName);
 
-    void DoInit();
-    UINT GetControlFlags() const;
-
     CStdString GetText() const;
     void SetEnabled(bool bEnable = true);
-
-    CStdString GetDropBoxAttributeList();
-    void SetDropBoxAttributeList(LPCTSTR pstrList);
-    SIZE GetDropBoxSize() const;
-    void SetDropBoxSize(SIZE szDropBox);
-
-    int GetCurSel() const;  
-    bool SelectItem(int iIndex, bool bTakeFocus = false);
 
     bool SetItemIndex(CControlUI* pControl, int iIndex);
     bool Add(CControlUI* pControl);
@@ -76,10 +75,7 @@ public:
 protected:
     CMenuWnd* m_pWindow;
 
-    int m_iCurSel;
     RECT m_rcTextPadding;
-    CStdString m_sDropBoxAttributes;
-    SIZE m_szDropBox;
     UINT m_uButtonState;
 
 	DWORD m_dwTextColor;

@@ -1,4 +1,7 @@
-// Copyright (c) 2010-2011, duilib develop team(www.duilib.com).
+// Copyright (c) 2012, Xiang Zhai (xiangzhai83@gmail.com) 
+// All rights reserved.
+//
+// Copyright (c) 2010-2011, duilib develop team (www.duilib.com).
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or 
@@ -60,7 +63,16 @@
 #include "UIContainer.h"
 #include "UIList.h"
 #include "UICombo.h"
-#include "UICommonControls.h"
+#include "UILabel.h"
+#include "UIButton.h"
+#include "UIOption.h"
+#include "UIText.h"
+#include "UIProgress.h"
+#include "UISlider.h"
+#include "UIEdit.h"
+#include "UIScrollBar.h"
+#include "UIDateTime.h"
+#include "UITool.h"
 #include "UIMenu.h"
 #include "UIActiveX.h"
 #include "UIRichEdit.h"
