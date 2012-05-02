@@ -85,9 +85,6 @@ protected:
     CStdString m_sFocusedImage;
     CStdString m_sDisabledImage;
     DWORD m_dwEditbkColor;
-
-protected:
-	void m_SetAutoComplete();
 };
 
 }

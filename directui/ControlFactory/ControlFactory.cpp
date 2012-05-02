@@ -32,9 +32,9 @@ public:
 	void OnPrepare() 
     {
 		std::vector<CStdString> src;
-		src.push_back("Windows");
-		src.push_back("Win32");
-		src.push_back("DirectUI");
+		src.push_back("windows");
+		src.push_back("win32");
+		src.push_back("directui");
         CEditUI* pEdit = static_cast<CEditUI*>(m_pm.FindControl(_T("edit1")));
 		if (pEdit) 
 		{

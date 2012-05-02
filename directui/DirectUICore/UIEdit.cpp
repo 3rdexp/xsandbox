@@ -25,6 +25,9 @@ protected:
     CEditUI* m_pOwner;
     HBRUSH m_hBkBrush;
     bool m_bInit;
+
+protected:
+	void m_SetAutoComplete();
 };
 
 CEditWnd::CEditWnd() : m_pOwner(NULL), m_hBkBrush(NULL), m_bInit(false) {}
@@ -83,6 +86,29 @@ void CEditWnd::OnFinalMessage(HWND /*hWnd*/)
     delete this;
 }
 
+void CEditWnd::m_SetAutoComplete() 
+{
+	std::vector<CStdString>::iterator iter;
+
+	int cchLen = ::GetWindowTextLength(m_hWnd) + 1;
+    LPTSTR pstr = static_cast<LPTSTR>(_alloca(cchLen * sizeof(TCHAR)));
+    ASSERT(pstr);
+    if (pstr == NULL) return;
+	// FIXME: I want to get current window text, but preview text
+    ::GetWindowText(m_hWnd, pstr, cchLen);
+
+	// sort by asc
+	std::sort(m_pOwner->m_pAutoCompleteSource.begin(), m_pOwner->m_pAutoCompleteSource.end());
+	for (iter = m_pOwner->m_pAutoCompleteSource.begin(); iter != m_pOwner->m_pAutoCompleteSource.end(); iter++) 
+	{
+		if (-1 != (*iter).Find(pstr)) 
+		{
+			m_pOwner->m_sText = *iter;
+			break;
+		}
+	}
+}
+
 LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT lRes = 0;
@@ -101,6 +127,7 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
             RECT rcClient;
             ::GetClientRect(m_hWnd, &rcClient);
+			m_SetAutoComplete();
             ::InvalidateRect(m_hWnd, &rcClient, FALSE);
         }
     }
@@ -172,24 +199,6 @@ UINT CEditUI::GetControlFlags() const
     return UIFLAG_SETCURSOR | UIFLAG_TABSTOP;
 }
 
-void CEditUI::m_SetAutoComplete() 
-{
-	std::vector<CStdString>::iterator iter;
-
-	m_sText.MakeLower();
-	// sort by asc
-	std::sort(m_pAutoCompleteSource.begin(), m_pAutoCompleteSource.end());
-	for (iter = m_pAutoCompleteSource.begin(); iter != m_pAutoCompleteSource.end(); iter++) 
-	{
-		(*iter).MakeLower();
-		if (-1 != (*iter).Find(m_sText.GetData())) 
-		{
-			m_sText = *iter;
-			break;
-		}
-	}
-}
-
 void CEditUI::DoEvent(TEventUI& event)
 {
     if( !IsMouseEnabled() && event.Type > UIEVENT__MOUSEBEGIN && event.Type < UIEVENT__MOUSEEND ) 
@@ -199,10 +208,6 @@ void CEditUI::DoEvent(TEventUI& event)
         return;
     }
 
-	if (event.Type == UIEVENT_KEYDOWN && IsEnabled()) 
-	{
-		m_SetAutoComplete();
-	}
     if( event.Type == UIEVENT_SETCURSOR && IsEnabled() )
     {
         ::SetCursor(::LoadCursor(NULL, MAKEINTRESOURCE(IDC_IBEAM)));
