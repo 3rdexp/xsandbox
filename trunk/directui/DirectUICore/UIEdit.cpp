@@ -37,17 +37,23 @@ void CEditWnd::Init(CEditUI* pOwner)
     m_pOwner = pOwner;
     RECT rcPos = CalPos();
     UINT uStyle = WS_CHILD | ES_AUTOHSCROLL;
+
     if (m_pOwner->IsPasswordMode()) uStyle |= ES_PASSWORD;
-    Create(m_pOwner->GetManager()->GetPaintWindow(), NULL, uStyle, 0, rcPos);
+    
+	Create(m_pOwner->GetManager()->GetPaintWindow(), NULL, uStyle, 0, rcPos);
     SetWindowFont(m_hWnd, m_pOwner->GetManager()->GetFontInfo(m_pOwner->GetFont())->hFont, TRUE);
     Edit_LimitText(m_hWnd, m_pOwner->GetMaxChar());
-    if (m_pOwner->IsPasswordMode()) Edit_SetPasswordChar(m_hWnd, m_pOwner->GetPasswordChar());
-    Edit_SetText(m_hWnd, m_pOwner->GetText());
+    
+	if (m_pOwner->IsPasswordMode()) Edit_SetPasswordChar(m_hWnd, m_pOwner->GetPasswordChar());
+    
+	Edit_SetText(m_hWnd, m_pOwner->GetText());
     Edit_SetModify(m_hWnd, FALSE);
-    SendMessage(EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELPARAM(0, 0));
+    
+	SendMessage(EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELPARAM(0, 0));
     Edit_Enable(m_hWnd, m_pOwner->IsEnabled() == true);
     Edit_SetReadOnly(m_hWnd, m_pOwner->IsReadOnly() == true);
-    ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
+    
+	::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
     ::SetFocus(m_hWnd);
     m_bInit = true;
 }
@@ -99,12 +105,20 @@ void CEditWnd::m_SetAutoComplete()
 
 	// sort by asc
 	std::sort(m_pOwner->m_pAutoCompleteSource.begin(), m_pOwner->m_pAutoCompleteSource.end());
+	// travel the source
 	for (iter = m_pOwner->m_pAutoCompleteSource.begin(); iter != m_pOwner->m_pAutoCompleteSource.end(); iter++) 
 	{
 		if (-1 != (*iter).Find(pstr)) 
 		{
-			m_pOwner->m_sText = *iter;
-			break;
+			if (m_pOwner->m_pAutoCompleteMode == Append) 
+			{
+				m_pOwner->m_sText = *iter;
+				break;
+			} 
+			else if (m_pOwner->m_pAutoCompleteMode == Suggest) 
+			{
+				// here comes dropdown list
+			}
 		}
 	}
 }
@@ -135,9 +149,13 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
         m_pOwner->GetManager()->SendNotify(m_pOwner, _T("return"));
     }
-    else if( uMsg == OCM__BASE + WM_CTLCOLOREDIT  || uMsg == OCM__BASE + WM_CTLCOLORSTATIC ) {
-        if( m_pOwner->GetNativeEditBkColor() == 0xFFFFFFFF ) return NULL;
-        ::SetBkMode((HDC)wParam, TRANSPARENT);
+    else if( uMsg == OCM__BASE + WM_CTLCOLOREDIT  || uMsg == OCM__BASE + WM_CTLCOLORSTATIC ) 
+	{
+        if (m_pOwner->GetNativeEditBkColor() == 0xFFFFFFFF) return NULL;
+        //
+		// TODO: Change Edit backgournd color
+		//
+		::SetBkMode((HDC)wParam, TRANSPARENT);
         DWORD dwTextColor = m_pOwner->GetTextColor();
         ::SetTextColor((HDC)wParam, RGB(GetBValue(dwTextColor),GetGValue(dwTextColor),GetRValue(dwTextColor)));
         if( m_hBkBrush == NULL ) {
