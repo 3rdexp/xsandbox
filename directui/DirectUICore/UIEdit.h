@@ -1,8 +1,19 @@
 #ifndef __UIEDIT_H__
 #define __UIEDIT_H__
 
+#include <vector>
+
 namespace DirectUICore 
 {
+
+//
+// TODO: Try to add AutoComplete support
+//
+
+typedef enum 
+{
+	None = 0, Append, Suggest, SuggestAppend
+} AutoCompleteMode;
 
 class CEditWnd;
 
@@ -26,6 +37,11 @@ public:
     bool IsPasswordMode() const;
     void SetPasswordChar(TCHAR cPasswordChar);
     TCHAR GetPasswordChar() const;
+
+	void SetAutoCompleteMode(AutoCompleteMode pAutoCompleteMode);
+	AutoCompleteMode GetAutoCompleteMode() const;
+	void SetAutoCompleteSource(std::vector<CStdString> pAutoCompleteSource);
+	std::vector<CStdString> GetAutoCompleteSource();
 
     LPCTSTR GetNormalImage();
     void SetNormalImage(LPCTSTR pStrImage);
@@ -60,11 +76,18 @@ protected:
     bool m_bPasswordMode;
     TCHAR m_cPasswordChar;
     UINT m_uButtonState;
+
+	AutoCompleteMode m_pAutoCompleteMode;
+	std::vector<CStdString> m_pAutoCompleteSource;
+
     CStdString m_sNormalImage;
     CStdString m_sHotImage;
     CStdString m_sFocusedImage;
     CStdString m_sDisabledImage;
     DWORD m_dwEditbkColor;
+
+protected:
+	void m_SetAutoComplete();
 };
 
 }

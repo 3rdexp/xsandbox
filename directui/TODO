@@ -1,10 +1,8 @@
 * Add DirectX animation support developed by Bjarke Viksoe (bjarke@viksoe.dk)
-* Add Menubar container
-* Add ComboBoxEntry
+* Add hardcore MenuStrip, Menu, MenuElement developed by achellies
 * Add NumericUpDown
-* Add CheckBox/RadioBox
+* Add RadioBox
 * Add ToggleButton
 * Add SwitchButton
-
-* Fix CEditUI focused bkcolor when Window`s bkcolor is black
+* Add AutoComplete for Edit
 * Fix CComboUI fail to inherit Window`s defaultfontcolor

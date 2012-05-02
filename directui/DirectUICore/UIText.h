@@ -4,7 +4,6 @@
 namespace DirectUICore 
 {
 
-// TODO: Add AutoComplete support
 class UILIB_API CTextUI : public CLabelUI
 {
 public:
