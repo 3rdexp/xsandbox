@@ -9,6 +9,7 @@ class CEditWnd : public CWindowWnd
 {
 public:
     CEditWnd();
+	~CEditWnd();
 
     void Init(CEditUI* pOwner);
     RECT CalPos();
@@ -26,11 +27,25 @@ protected:
     HBRUSH m_hBkBrush;
     bool m_bInit;
 
-protected:
-	void m_SetAutoComplete();
+private:
+	HANDLE m_AutoCompleteThread;
+
+private:
+	static DWORD WINAPI m_AutoCompleteProc(LPVOID lpParam);
 };
 
-CEditWnd::CEditWnd() : m_pOwner(NULL), m_hBkBrush(NULL), m_bInit(false) {}
+CEditWnd::CEditWnd() : m_pOwner(NULL), m_hBkBrush(NULL), m_bInit(false), 
+m_AutoCompleteThread(NULL) {}
+
+CEditWnd::~CEditWnd() 
+{
+	if (m_AutoCompleteThread) 
+	{
+		TerminateThread(m_AutoCompleteThread, NULL);
+		CloseHandle(m_AutoCompleteThread);
+		m_AutoCompleteThread = NULL;
+	}
+}
 
 void CEditWnd::Init(CEditUI* pOwner)
 {
@@ -87,40 +102,45 @@ LPCTSTR CEditWnd::GetSuperClassName() const
 void CEditWnd::OnFinalMessage(HWND /*hWnd*/)
 {
     // Clear reference and die
-    if( m_hBkBrush != NULL ) ::DeleteObject(m_hBkBrush);
+    if (m_hBkBrush != NULL) ::DeleteObject(m_hBkBrush);
     m_pOwner->m_pWindow = NULL;
     delete this;
 }
 
-void CEditWnd::m_SetAutoComplete() 
+DWORD WINAPI CEditWnd::m_AutoCompleteProc(LPVOID lpParam) 
 {
+	CEditWnd* thisPtr = static_cast<CEditWnd*>(lpParam);
 	std::vector<CStdString>::iterator iter;
 
-	int cchLen = ::GetWindowTextLength(m_hWnd) + 1;
+	int cchLen = ::GetWindowTextLength(thisPtr->m_hWnd) + 1;
     LPTSTR pstr = static_cast<LPTSTR>(_alloca(cchLen * sizeof(TCHAR)));
     ASSERT(pstr);
-    if (pstr == NULL) return;
+    if (pstr == NULL) return -1;
 	// FIXME: I want to get current window text, but preview text
-    ::GetWindowText(m_hWnd, pstr, cchLen);
+    ::GetWindowText(thisPtr->m_hWnd, pstr, cchLen);
 
 	// sort by asc
-	std::sort(m_pOwner->m_pAutoCompleteSource.begin(), m_pOwner->m_pAutoCompleteSource.end());
+	std::sort(thisPtr->m_pOwner->m_pAutoCompleteSource.begin(), 
+		thisPtr->m_pOwner->m_pAutoCompleteSource.end());
 	// travel the source
-	for (iter = m_pOwner->m_pAutoCompleteSource.begin(); iter != m_pOwner->m_pAutoCompleteSource.end(); iter++) 
+	for (iter = thisPtr->m_pOwner->m_pAutoCompleteSource.begin(); 
+		iter != thisPtr->m_pOwner->m_pAutoCompleteSource.end(); iter++) 
 	{
 		if (-1 != (*iter).Find(pstr)) 
 		{
-			if (m_pOwner->m_pAutoCompleteMode == Append) 
+			if (thisPtr->m_pOwner->m_pAutoCompleteMode == Append) 
 			{
-				m_pOwner->m_sText = *iter;
+				thisPtr->m_pOwner->m_sText = *iter;
 				break;
 			} 
-			else if (m_pOwner->m_pAutoCompleteMode == Suggest) 
+			else if (thisPtr->m_pOwner->m_pAutoCompleteMode == Suggest) 
 			{
 				// here comes dropdown list
 			}
 		}
 	}
+
+	return 0;
 }
 
 LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -141,10 +161,19 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
             RECT rcClient;
             ::GetClientRect(m_hWnd, &rcClient);
-			m_SetAutoComplete();
             ::InvalidateRect(m_hWnd, &rcClient, FALSE);
         }
-    }
+	} 
+	else if (uMsg == WM_KEYDOWN) 
+	{
+		if (m_AutoCompleteThread) 
+		{
+			TerminateThread(m_AutoCompleteThread, NULL);
+			CloseHandle(m_AutoCompleteThread);
+			m_AutoCompleteThread = NULL;
+		}
+		m_AutoCompleteThread = CreateThread(NULL, NULL, m_AutoCompleteProc, this, NULL, NULL);
+	} 
 	else if (uMsg == WM_KEYDOWN && TCHAR(wParam) == VK_RETURN) 
 	{
         m_pOwner->GetManager()->SendNotify(m_pOwner, _T("return"));

@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloWorld", "HelloWorld\He
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ControlFactory", "ControlFactory\ControlFactory.vcproj", "{C3F7D43F-D7C7-4C48-99EF-F3E1E2702AB7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloImage", "HelloImage\HelloImage.vcproj", "{CEB705D1-1543-4447-9F30-E6089BA73711}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,10 @@ Global
 		{C3F7D43F-D7C7-4C48-99EF-F3E1E2702AB7}.Debug|Win32.Build.0 = Debug|Win32
 		{C3F7D43F-D7C7-4C48-99EF-F3E1E2702AB7}.Release|Win32.ActiveCfg = Release|Win32
 		{C3F7D43F-D7C7-4C48-99EF-F3E1E2702AB7}.Release|Win32.Build.0 = Release|Win32
+		{CEB705D1-1543-4447-9F30-E6089BA73711}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CEB705D1-1543-4447-9F30-E6089BA73711}.Debug|Win32.Build.0 = Debug|Win32
+		{CEB705D1-1543-4447-9F30-E6089BA73711}.Release|Win32.ActiveCfg = Release|Win32
+		{CEB705D1-1543-4447-9F30-E6089BA73711}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
