@@ -20,15 +20,31 @@ CHelloImageDlg::CHelloImageDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
+	/*
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
 	m_MemoryGraphics = NULL;
+	*/
+
+	m_GifImage = NULL;
 }
 
 CHelloImageDlg::~CHelloImageDlg() 
 {
-	if (m_MemoryGraphics) delete m_MemoryGraphics; m_MemoryGraphics = NULL;
+	if (m_GifImage) 
+	{
+		delete m_GifImage;
+		m_GifImage = NULL;
+	}
+
+	/*
+	if (m_MemoryGraphics) 
+	{
+		delete m_MemoryGraphics; 
+		m_MemoryGraphics = NULL;
+	}
 	Gdiplus::GdiplusShutdown(m_gdiplusToken);
+	*/
 }
 
 void CHelloImageDlg::DoDataExchange(CDataExchange* pDX)
@@ -56,6 +72,8 @@ BOOL CHelloImageDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	m_GifImage = new GifImage(L"duck.gif");
+	m_GifImage->InitAnimation(m_hWnd, CPoint(0, 0));
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -85,6 +103,7 @@ void CHelloImageDlg::OnPaint()
 	}
 	else
 	{
+		/*
 		CPaintDC dc(this);
 		CRect rect;
 
@@ -101,6 +120,13 @@ void CHelloImageDlg::OnPaint()
 		m_MemoryGraphics->FillRectangle(&pWndBg, pWndRect);
 
 		// TODO: Draw your stuff
+		wchar_t strCurrentDirectory[MAX_PATH] = {'\0'};
+		wchar_t strGifImage[MAX_PATH] = {'\0'};
+		GetCurrentDirectoryW(MAX_PATH, strCurrentDirectory);
+		swprintf(strGifImage, L"%s\\duck.gif", strCurrentDirectory);
+		m_GifImage = new GifImage("gif", "duck");
+		int cx = (rect.Width() - m_GifImage->GetWidth()) / 2;
+		m_GifImage->InitAnimation(m_hWnd, CPoint(cx, 10));
 
 		pGraphics.DrawImage(&pBitmap, rect.left, rect.top);
 
@@ -109,6 +135,7 @@ void CHelloImageDlg::OnPaint()
 			delete m_MemoryGraphics; 
 			m_MemoryGraphics = NULL;
 		}
+		*/
 
 		CDialog::OnPaint();
 	}
