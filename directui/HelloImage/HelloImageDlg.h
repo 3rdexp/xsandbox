@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "GifImage.h"
 
 // CHelloImageDlg dialog
 class CHelloImageDlg : public CDialog
@@ -32,5 +33,6 @@ protected:
 
 private:
 	ULONG_PTR			m_gdiplusToken;
-	Gdiplus::Graphics	*m_MemoryGraphics;
+	Gdiplus::Graphics*	m_MemoryGraphics;
+	GifImage*			m_GifImage;
 };
