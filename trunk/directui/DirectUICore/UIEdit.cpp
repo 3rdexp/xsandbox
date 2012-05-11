@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 
+#include <conio.h>
 #include <algorithm>
 
 namespace DirectUICore 
@@ -29,9 +30,11 @@ protected:
 
 private:
 	HANDLE m_AutoCompleteThread;
+	CStdString m_strEditText;
 
 private:
 	static DWORD WINAPI m_AutoCompleteProc(LPVOID lpParam);
+	void m_GetWindowText();
 };
 
 CEditWnd::CEditWnd() : m_pOwner(NULL), m_hBkBrush(NULL), m_bInit(false), 
@@ -82,7 +85,8 @@ RECT CEditWnd::CalPos()
     rcPos.right -= rcInset.right;
     rcPos.bottom -= rcInset.bottom;
     LONG lEditHeight = m_pOwner->GetManager()->GetFontInfo(m_pOwner->GetFont())->tm.tmHeight;
-    if( lEditHeight < rcPos.GetHeight() ) {
+    if (lEditHeight < rcPos.GetHeight()) 
+	{
         rcPos.top += (rcPos.GetHeight() - lEditHeight) / 2;
         rcPos.bottom = rcPos.top + lEditHeight;
     }
@@ -102,7 +106,7 @@ LPCTSTR CEditWnd::GetSuperClassName() const
 void CEditWnd::OnFinalMessage(HWND /*hWnd*/)
 {
     // Clear reference and die
-    if (m_hBkBrush != NULL) ::DeleteObject(m_hBkBrush);
+    if (m_hBkBrush) ::DeleteObject(m_hBkBrush);
     m_pOwner->m_pWindow = NULL;
     delete this;
 }
@@ -112,13 +116,6 @@ DWORD WINAPI CEditWnd::m_AutoCompleteProc(LPVOID lpParam)
 	CEditWnd* thisPtr = static_cast<CEditWnd*>(lpParam);
 	std::vector<CStdString>::iterator iter;
 
-	int cchLen = ::GetWindowTextLength(thisPtr->m_hWnd) + 1;
-    LPTSTR pstr = static_cast<LPTSTR>(_alloca(cchLen * sizeof(TCHAR)));
-    ASSERT(pstr);
-    if (pstr == NULL) return -1;
-	// FIXME: I want to get current window text, but preview text
-    ::GetWindowText(thisPtr->m_hWnd, pstr, cchLen);
-
 	// sort by asc
 	std::sort(thisPtr->m_pOwner->m_pAutoCompleteSource.begin(), 
 		thisPtr->m_pOwner->m_pAutoCompleteSource.end());
@@ -126,11 +123,14 @@ DWORD WINAPI CEditWnd::m_AutoCompleteProc(LPVOID lpParam)
 	for (iter = thisPtr->m_pOwner->m_pAutoCompleteSource.begin(); 
 		iter != thisPtr->m_pOwner->m_pAutoCompleteSource.end(); iter++) 
 	{
-		if (-1 != (*iter).Find(pstr)) 
+		if (-1 != (*iter).Find(thisPtr->m_pOwner->m_sText)) 
 		{
 			if (thisPtr->m_pOwner->m_pAutoCompleteMode == Append) 
 			{
 				thisPtr->m_pOwner->m_sText = *iter;
+				RECT rcClient;
+				::GetClientRect(thisPtr->m_hWnd, &rcClient);
+				::InvalidateRect(thisPtr->m_hWnd, &rcClient, FALSE);
 				break;
 			} 
 			else if (thisPtr->m_pOwner->m_pAutoCompleteMode == Suggest) 
@@ -163,7 +163,7 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ::GetClientRect(m_hWnd, &rcClient);
             ::InvalidateRect(m_hWnd, &rcClient, FALSE);
         }
-	} 
+	}
 	else if (uMsg == WM_KEYDOWN) 
 	{
 		if (m_AutoCompleteThread) 
@@ -173,7 +173,7 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			m_AutoCompleteThread = NULL;
 		}
 		m_AutoCompleteThread = CreateThread(NULL, NULL, m_AutoCompleteProc, this, NULL, NULL);
-	} 
+	}
 	else if (uMsg == WM_KEYDOWN && TCHAR(wParam) == VK_RETURN) 
 	{
         m_pOwner->GetManager()->SendNotify(m_pOwner, _T("return"));
@@ -187,14 +187,15 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		::SetBkMode((HDC)wParam, TRANSPARENT);
         DWORD dwTextColor = m_pOwner->GetTextColor();
         ::SetTextColor((HDC)wParam, RGB(GetBValue(dwTextColor),GetGValue(dwTextColor),GetRValue(dwTextColor)));
-        if( m_hBkBrush == NULL ) {
+        if (m_hBkBrush == NULL) 
+		{
             DWORD clrColor = m_pOwner->GetNativeEditBkColor();
             m_hBkBrush = ::CreateSolidBrush(RGB(GetBValue(clrColor), GetGValue(clrColor), GetRValue(clrColor)));
         }
         return (LRESULT)m_hBkBrush;
     }
     else bHandled = FALSE;
-    if( !bHandled ) return CWindowWnd::HandleMessage(uMsg, wParam, lParam);
+    if (!bHandled) return CWindowWnd::HandleMessage(uMsg, wParam, lParam);
     return lRes;
 }
 
@@ -217,6 +218,7 @@ LRESULT CEditWnd::OnEditChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
     ::GetWindowText(m_hWnd, pstr, cchLen);
     m_pOwner->m_sText = pstr;
     m_pOwner->GetManager()->SendNotify(m_pOwner, _T("textchanged"));
+
     return 0;
 }
 
