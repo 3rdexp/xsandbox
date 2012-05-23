@@ -180,6 +180,58 @@
 				RelativePath=".\HelloQQ.cpp"
 				>
 			</File>
+			<Filter
+				Name="mhook-lib"
+				>
+				<File
+					RelativePath=".\mhook-lib\mhook.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\mhook-lib\mhook.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="disasm-lib"
+				>
+				<File
+					RelativePath=".\disasm-lib\cpu.c"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\cpu.h"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\disasm.c"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\disasm.h"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\disasm_x86.c"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\disasm_x86.h"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\disasm_x86_tables.h"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\misc.c"
+					>
+				</File>
+				<File
+					RelativePath=".\disasm-lib\misc.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
