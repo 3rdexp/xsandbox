@@ -1,0 +1,557 @@
+前一段时间研究了下QQ目前各种外挂的机理，包括著名的coralQQ。鉴于目前网上关于这方面的文章少之又少，一般能找到的应该就这下面3篇(由于可能涉及版权问题，我链接就不给出了：
+
+　　a.木子版显IPQQ的制作教程
+
+　　b.关于QQ外挂DLL的加载原理的分析
+
+　　c.明日帝国(sunwangme)写的我是这样来做破解qq，做QQ外挂的系列
+
+　　在开始我的分析前我简要对上面这些资料作下评价，首先我觉得如果你也想写个类似的外挂插件，他们的文章你是必看的，而且特别是你想真的写出什么有用的东西的话，明日帝国得文章一定要看，而且必须看懂。对于木子版的教程应该说是最早“公开”的资料了，很多人都是看了这个教程开始写自己的外挂的。但是他通过直接修改QQ来做显IP补丁，可能引起的法律问题不说(如果你只是自娱自乐的话)，他不能适应不同版本的QQ，而且用户也不太能接受直接的修改，而且教程已经不能直接用于目前版本的QQ了。
+
+　　第二个教程是做外挂DLL插件必看的，但是他丝毫没涉及显示IP的问题，只是简单介绍了DLL注入的问题，并对win9x环境下手动加载dll到进程空间作了分析。但是目前win9x已逐渐退出舞台，所以一般只要使用CreateRemoteThread即可。
+
+　　第一部分:
+
+　　1.1 主流的外挂插件如何获取IP和其他信息的?
+
+　　也许你会认为他拦截了底层的Socket通讯?当然不至于，但这样肯定是最有效的办法。
+
+　　让我们换个思路:如果你现在需要和一个QQ好友传输文件或者进行语音聊天或者发送了图片或自定义表情。那么QQ必须知道对方的IP地址和端口信息，这样才能把数据传给对方。
+
+　　所以，很有可能QQ内部已经实现了获取IP地址和其他信息的相关函数了。的确如此。这也是木子版QQ教程里面提到的办法，调用QQ内部的函数。
+
+　　下面是截至QQ组件之一的CQQApplication.dll中的汇编代码:(建议先浏览木子版QQ的教程)
+
+　　027832C7 8B45 F0 mov eax,dword ptr ss:[ebp-10]
+　　027832CA 53 push ebx
+　　027832CB 68 38558302 push CQQAppli.02835538 ; ASCII dwIP
+　　027832D0 50 push eax
+　　027832D1 8B08 mov ecx,dword ptr ds:[eax]
+　　027832D3 FF51 18 call dword ptr ds:[ecx+18]
+　　027832D6 8B45 F0 mov eax,dword ptr ss:[ebp-10]
+　　027832D9 53 push ebx
+　　027832DA 68 40558302 push CQQAppli.02835540 ; ASCII wPort
+　　027832DF 50 push eax
+　　027832E0 8B08 mov ecx,dword ptr ds:[eax]
+　　027832E2 FF51 14 call dword ptr ds:[ecx+14]
+
+ 　　CQQApplication.dll通俗来说就是负责显示和实现QQ聊天窗口的模块。就是那些和xxx聊天中的窗口，所以这就是为什么要在其中寻找这样的代码的依据。
+
+　　从上面的汇编来看，显然是调用了2个thiscall规范的函数，也就是我们所说的C++类成员函数。
+
+　　2个成员函数的的大致形式是this->Func(void *ptr1,char *cmd,DWORD *ptr2);其中cmd就是上面dwIP、wPort这些字符串，而ptr2也很容易知道是函数返回值得存储指针。现在关键是要获取this指针，也就是ecx寄存器的数据和ptr1这个神秘指针的数据。
+
+　　如果你有兴趣反汇编CoralQQ中相关的代码，也会发现与上面类似的调用部分。
+
+　　这里暂时不深入这些函数的作用和那个cmd指针的细节，我们先来研究如何获取this指针和ptr2吧。
+
+　　注意
+
+　　027832DF 50 push eax
+
+　　027832E0 8B08 mov ecx,dword ptr ds:[eax]
+
+　　这2段代码，也就是说ptr2获取了，那么this指针也可以得到。所以现在一切的关键就是找出ptr2的来历。这样我们就能很轻松的实现显示ip了。
+
+　　1.2 神秘的ptr2指针
+
+　　为了能更快的说明问题，这里就不厚道的引用CoralQQ.dll的汇编了~
+
+　　0056D97F 51 push ecx
+　　0056D980 52 push edx
+　　0056D981 50 push eax
+　　0056D982 FF15 38AB5A00 call dword ptr ds:[5AAB38] ; BasicCtr.GetFriendQQData
+　　0056D988 8B4424 14 mov eax,dword ptr ss:[esp+14]
+　　0056D98C 83C4 0C add esp,0C
+　　0056D98F 3BC3 cmp eax,ebx
+　　0056D991 0F84 03020000 je CoralQQ.0056DB9A
+　　0056D997 57 push edi
+　　0056D998 895C24 14 mov dword ptr ss:[esp+14],ebx
+　　0056D99C 8D5424 14 lea edx,dword ptr ss:[esp+14]
+　　0056D9A0 52 push edx
+　　0056D9A1 68 50BB5900 push CoralQQ.0059BB50
+　　0056D9A6 C64424 30 01 mov byte ptr ss:[esp+30],1
+　　0056D9AB 8B08 mov ecx,dword ptr ds:[eax]
+　　0056D9AD 68 C8BA5900 push CoralQQ.0059BAC8 ; ASCII QQUSER_DYNAMIC_DATA
+　　0056D9B2 50 push eax
+　　0056D9B3 8B41 54 mov eax,dword ptr ds:[ecx+54]
+　　0056D9B6 FFD0 call eax
+　　0056D9B8 8B4424 14 mov eax,dword ptr ss:[esp+14]
+　　0056D9BC 3BC3 cmp eax,ebx
+　　0056D9BE 0F84 F9000000 je CoralQQ.0056DABD
+　　0056D9C4 8B08 mov ecx,dword ptr ds:[eax]
+　　0056D9C6 8D5424 1C lea edx,dword ptr ss:[esp+1C]
+　　0056D9CA 52 push edx
+　　0056D9CB 68 ACA15900 push CoralQQ.0059A1AC ; ASCII wProcotol
+　　0056D9D0 50 push eax
+　　0056D9D1 8B41 30 mov eax,dword ptr ds:[ecx+30]
+　　0056D9D4 FFD0 call eax
+　　0056D9D6 8B4424 14 mov eax,dword ptr ss:[esp+14]
+　　0056D9DA 8B08 mov ecx,dword ptr ds:[eax]
+　　0056D9DC 8D5424 10 lea edx,dword ptr ss:[esp+10]
+　　0056D9E0 52 push edx
+　　0056D9E1 68 94A15900 push CoralQQ.0059A194 ; ASCII dwRecentIP
+　　0056D9E6 50 push eax
+　　0056D9E7 8B41 34 mov eax,dword ptr ds:[ecx+34]
+　　0056D9EA FFD0 call eax
+
+　　以上代码正式coralQQ 4.5版获取IP信息的片断。我们只需要关注上面的0056D982和0056D9B6地址的2个调用函数。
+
+　　为什么这样说了，先看下面获取dwRecentIP数据的代码，它和上面提到的那个成员函数是属于一个类的(这里没提供出完整代码，你可以自己验证下:-P)。那么这里的this指针从哪里来呢?
+
+　　0056D9DA 8B08 mov ecx,dword ptr ds:[eax]
+
+　　0056D9D6 8B4424 14 mov eax,dword ptr ss:[esp+14]
+
+　　按照thiscall规范，ecx就保存了this指针，上面代码说明ecx是来自[esp+14]的，我们再往上看:
+
+　　0056D99C 8D5424 14 lea edx,dword ptr ss:[esp+14]
+　　0056D9A0 52 push edx
+　　0056D9A1 68 50BB5900 push CoralQQ.0059BB50
+　　0056D9A6 C64424 30 01 mov byte ptr ss:[esp+30],1
+　　0056D9AB 8B08 mov ecx,dword ptr ds:[eax]
+　　0056D9AD 68 C8BA5900 push CoralQQ.0059BAC8 ; ASCII QQUSER_DYNAMIC_DATA
+　　0056D9B2 50 push eax
+　　0056D9B3 8B41 54 mov eax,dword ptr ds:[ecx+54]
+　　0056D9B6 FFD0 call eax
+
+　　看到么0056D99C lea edx,dword ptr ss:[esp+14]!!
+
+　　也就是说this指针和ptr2时由这个函数获得的，我们暂时以它的一个参数命名:QQUSER_DYNAMIC_DATA。
+
+　　但不幸的是，这个函数同样也是thiscall调用规范的，也就说也是需要得到this指针……不过不慌:
+
+　　0056D97F 51 push ecx
+　　0056D980 52 push edx
+　　0056D981 50 push eax
+　　0056D982 FF15 38AB5A00 call dword ptr ds:[5AAB38] ; BasicCtr.GetFriendQQData
+　　0056D988 8B4424 14 mov eax,dword ptr ss:[esp+14]
+
+　　0056D9AB 8B08 mov ecx,dword ptr ds:[eax]
+
+　　注意上面2段代码，QQUSER_DYNAMIC_DATA函数的this指针最终是[esp+14]，而esp+14的数据是
+
+　　0056D97F 51 push ecx
+
+　　这段代码压入的。所幸的是GetFriendQQData是个导出函数(位于BasicCtrDll.dll)，我们看看他的申明:
+
+　　int GetFriendQQData(struct IQQCore *,unsigned long,struct IQQData * *);
+
+　　上面这个push ecx实际上是压入了参数struct IQQData * *。
+
+　　所以现在的只要获得struct IQQCore *,和第二个神秘参数的含义就能实现显示IP的功能了。
+1.3 IQQCore和Uin
+
+　　int GetFriendQQData(struct IQQCore *,unsigned long,struct IQQData * *);
+
+　　这个函数，从而获得那个struct IQQData *指针。但问题就是要调用这个函数必须要提供2个参数:IQQCore *和一个unsigned long(DWORD)的神秘数据。
+
+　　在开始正式分析前请各位思考下，如果要你编写一个能显示好友IP的函数，你需要先知道什么呢?
+
+　　至少需要知道要去获取哪个QQ好友吧。这个肯定是必须的，否则函数就没有执行的意义了
+
+　　现在我们跟踪下上面这个GetFriendQQData函数。在其入口点下断点。然后小心的把鼠标移动到QQ好友列表中某个头像上(需要使用CoralQQ……有点不厚道)。这时候应该程序就会被断下。
+
+　　因为正常理鼠标移至好友头像会显示信息卡片，CoralQQ会在下面显示IP信息，所以按照上一篇文章反汇编的代码，GetFriendQQData必然会调用。我们从堆栈里面找到这个unsigned long对应的数据:
+
+　　0x1A53836
+
+　　因为是DWORD数据，把它转化为10进制看看:27605046
+
+　　这不是我的QQ号码么……的确，先前鼠标是移动在我的头像上了。
+
+　　所以可以猜测这个unsigned long就是好友的QQ号码。
+
+　　经过多次验证，的确如此。
+
+　　所以，这个神秘的unsigned long明确:他是要获取好友信息的号码,顺便补充下，这个unsigned long在QQ中可是有专门名字的:Uin
+
+　　接下来就是struct IQQCore*，我想他的作用从名字中应该就能猜出大概来。虽然具体他的结构我还没弄清，但可以肯定他好比是QQ程序内核信息的指针。而现在最关键的问题是如何去获得它。
+
+　　如果你研究过BasicCtrlDll.dll中导出的函数，你会发现几乎一半的函数的参数都由这个IQQCore，比如:
+
+　　int GetCurrentStatus(struct IQQCore *,int *)
+　　int GetCurrentUin(struct IQQCore *,unsigned long *)
+　　int GetFriendStat(struct IQQCore *,unsigned long)
+
+　　那么我们就拦截其中的一部分函数，看看提供给他们的这个struct IQQCore *参数具体是什么。
+
+　　如果你的确这样做了，那么会发现所有的函数，无论在什么时候，这个struct IQQCore *的值是确定的唯一的。如果你这个IQQCore *指针的地址区域下内存写入断点的话会发现struct IQQCore *实际上在QQ进行登录初始化时就创建了，以后就不再被修改。
+
+　　所以现在的问题就很简单了，我们可以暂时不用理会struct IQQCore *到底是什么，只要能获取到他就ok
+
+　　1.4 如何获取struct IQQCore *?
+
+　　如果只是调试个QQ，得到struct IQQCore *是非常容易的，但记住我们是要编写外挂。所以就是说我们要问:外挂如果通过程序来获取这个指针呢?
+
+　　最野蛮的办法:把外挂写成一个调试器，模拟手工调试的过程，获得这个IQQCore *。ok，我很佩服你这样做，这也是我原先的想法。虽然写这个一个调试器是很简单的，但是他基本上没有实际意义，因为不能应对各种版本的QQ程序，而且也就无法再使用OD这些调试器来调试你的程序了
+
+　　下面的方法要感谢明日帝国(sunwangme)写的教程了，可能一开始你看他教程会不知所云，但相信你现在去看他的文章就会很有感触。
+
+　　上面说过这个IQQCore 是不会改变的，而且BasicCtrlDll.dll导出的那么多函数又偏偏要用到他，为什么不去拦截一个有IQQCore *参数的函数来获取这个IQQCore *呢?
+
+　　具体的做法我会在编写插件时说明。可能你会想拦截导出函数(也就是API)不也是调试器作的事么?其实也有别的办法，这里就是用API Hook技术来实现的(建议先了解下win32的hook技术)。
+
+　　问题是API SetWindowsHookEx是不可能hook一个API的。所以这里要用比较“底层”的办法:
+
+　　一个导出函数的入口内存地址可以用GetProcAddress API获取，我们只要修改程序的代码，使得他在原先函数入口点执行时跳入我们的函数取执行，然后再跳转回来即可。(实际做法不是这样，在说明如何编写插件时我会说到)
+
+　　现在问题就是要在BasicCtrlDll.dll导出函数中选取一个比较理想的函数取拦截，得到IQQCore
+
+　　要拦截的函数应该具有如下特点:
+
+　　函数形参简单，最好只有IQQCore *一个参数
+
+　　函数能尽早被调用，这样能及早的获取IQQCore *
+
+　　函数不能是thiscall规范的，也就是说函数必须是全局函数，不是一个成员函数
+
+　　为何要这些特点应该都能理解，我对最后一个做下说明，thiscall规范的函数还需要一个类的this指针地址，这会给拦截造成一定麻烦(今后就会遇到这样的情况，以后再讨论)。
+
+　　最终我们选取的函数是QQHelperDll.dll中的一个导出函数:
+
+　　int IsLogin(struct IQQCore *);
+
+　　很满足我们的要求，而且用OD跟踪发现，他在QQ登录后就不停的调用，太爽了……
+
+　　总结一下:要获取struct IQQCore *通过拦截API获取参数实现，我们拦截的函数选用了IsLogin()。
+
+　　1.5 Uin和struct IQQData *
+
+　　现在还有2个问题要去研究，第一，在调用GetFriendQQData时候，Uin(就是那个unsigned long参数)如何确定呢?
+
+　　这个问题要等到我介绍插件编写时在讨论，但可以先做下暗示，我们编写的插件是需要在打开和好友聊天的对话框以及将鼠标移动到好友头像上时，显示对方的IP信息，就第一个情况:QQ的聊天对话框里面不就有好友的QQ号码(Uin)么?第二个情况:虽然探出的信息卡片没有号码，但可以猜测QQ也是先需要获取相关信息的。
+
+　　现在我们再说说这个IQQData *的作用，看看BasicCtrlDll.dll的一些导出函数:
+
+　　long GetQQDataBuf(struct IQQData *,char const *,class CString &)
+　　long GetQQDataStr(struct IQQData *,char const *,class CString &)
+
+　　其中需要IQQData *参数，那么我们看看这些函数有什么作用呢?以GetQQDataStr在CoralQQ中的使用情况为例:
+
+　　0056DAC4 57 push edi
+　　0056DAC5 68 DCBA5900 push CoralQQ.0059BADC ; ASCII NAME
+　　0056DACA 52 push edx
+　　0056DACB FF15 44AB5A00 call dword ptr ds:[5AAB44] ; BasicCtr.GetQQDataStr
+　　0056DAE5 8B4424 24 mov eax,dword ptr ss:[esp+24]
+　　0056DAE9 8D56 34 lea edx,dword ptr ds:[esi+34]
+　　0056DAEC 52 push edx
+　　0056DAED 68 ECBA5900 push CoralQQ.0059BAEC ; ASCII REMARK_REALNAME
+　　0056DAF2 50 push eax
+　　0056DAF3 FF15 44AB5A00 call dword ptr ds:[5AAB44] ; BasicCtr.GetQQDataStr
+　　0056DAF9 8B5424 30 mov edx,dword ptr ss:[esp+30]
+　　0056DAFD 8D4E 38 lea ecx,dword ptr ds:[esi+38]
+　　0056DB00 51 push ecx
+　　0056DB01 68 FCBA5900 push CoralQQ.0059BAFC ; ASCII COUNTRY
+　　0056DB06 52 push edx
+　　0056DB07 FF15 44AB5A00 call dword ptr ds:[5AAB44] ; BasicCtr.GetQQDataStr
+　　0056DB0D 8B4C24 3C mov ecx,dword ptr ss:[esp+3C]
+　　0056DB11 8D46 3C lea eax,dword ptr ds:[esi+3C]
+　　0056DB14 50 push eax
+　　0056DB15 68 04BB5900 push CoralQQ.0059BB04 ; ASCII PROVINCE
+　　0056DB1A 51 push ecx
+　　0056DB1B FF15 44AB5A00 call dword ptr ds:[5AAB44] ; BasicCtr.GetQQDataStr
+
+　　这些代码是在获取IP信息后出现的，猜猜在做什么呢?NAME，COUNTRY，PROVINCE这些词汇来看，应该是在获取当前要显示ip好友的名字、国籍、省份。而具体的执行函数就是GetQQDataStr。
+
+　　再结合这个函数的参数来看，IQQData *,很有可能就是存放着一个用户相关信息的结构
+
+　　事实也是如此的，到目前为止编写QQ外挂插件的条件已经具备。
+2.编写QQ显IP插件
+
+　　2.1 编写加载外挂dll的程序
+
+　　这里采用VC作为开发环境，我使用的是VS2005
+
+　　首先说下大体的思路:
+
+　　这里仿造coralQQ一样，将真正的外挂代码写入dll，然后编写一个exe文件去加载qq.exe，并把我们写得dll注入。
+
+　　这一步在前一篇文章中已经给出了具体代码。
+
+　　2.2 编写插件主体
+
+　　感觉自己如果一涉及具体代码就回说不来话，所以这次就先谈思路，然后给出部分代码。
+
+　　dll要做的事:
+
+　　将我们前面分析过的关键API挂钩，以便得到IQQCore *，Uin，以及在qq聊天窗口弹出时进行捕获以便显示IP信息。
+
+　　要做到上面的要求，首先就是要在dll加载后开始做API hook的工作。
+
+　　不过这件事情不能在DllMain里面写，推荐的做法是在DllMain里面创建一个新的线程，线程的执行函数我们设为:WorkerProc(VC编写的话推荐用_beginthread创建这个线程，否则无法使用CRT函数)，为什么不能直接在DllMain里面写我稍候分析
+
+　　然后就是在WorkerProc里面写入具体的hook代码。
+
+　　1.拦截QQHelperDll.dll中的IsLogin函数
+
+　　前面分析过了，IQQCore *指针可以通过拦截这个API来获取。
+
+　　这里我们采用的是《windows核心编程》中推荐的拦截API hook的办法(修改入口地址跳转相对他烦了些，而且我们这里只是想做hook):通过动态修改API调用者模块的IAT表，将原先API的入口地址替换成我们函数的。具体的替换代码我们就采用书中提供的了的ReplaceIATEntryInOneMod(见前一篇)。
+
+　　现在要注意一个问题，我们用来替换原先API的函数必须和原函数采用同样的调用规范，这个IsLogin本身就是cdecl得，所以只要用个形参和返回值一样的函数取替换即可:
+
+　　给出实现本功能的代码:
+
+　　typedef int (*OrgIsLogin)(DWORD ptrIQQCore);
+　　int PokeIsLogin(DWORD ptrIQQCore)
+　　{
+　　　global_ptrIQQCore = ptrIQQCore;
+　　　return ((OrgIsLogin)(PROC)OrgIsLoginProc)(ptrIQQCore);
+　　}
+
+　　////下面代码在WorkerProc函数中///
+
+　　OrgIsLoginProc = GetProcAddress( GetModuleHandleA(QQHelperDll.dll),?IsLogin@@YAHPAUIQQCore@@@Z);
+　　if (ReplaceIATEntryInOneMod(QQHelperDll.dll,OrgIsLoginProc,(PROC)&PokeIsLogin,GetModuleHandleA(qq.exe)))
+　　{
+　　　//替换成功
+　　}
+　　//
+
+　　今后，只要QQ.exe调用IsLogin，我们的PokeIsLogin函数就会调用，并把IQQCore纪录下来，注意替换的函数要最后去调用原函数，否则就会让程序崩溃。
+
+　　2.拦截SetForegroundWindow API
+
+　　拦截该API是因为每次弹出新的QQ聊天窗口时，CQQApplication.dll都会去调用它，以便把聊天窗口至于前景显示。所以拦截CQQApplication.dll对他的调用就能在由新的聊天窗口出现时调用我们插件的代码去显示IP信息，而不必傻傻的去写循环等待了
+
+　　这里就要注意SetForegroundWindow 是采用stdall调用规范的，所以别忘在替换函数名前加上__stdcall(或WINAPI宏)标记。
+
+　　该部分的替换代码如下:
+
+　　typedef BOOL ( __stdcall *OrgSetForegrandWindow)(HWND hWnd);
+　　extern C BOOL APIENTRY OnQQWndShow(HWND hWnd)
+　　{
+　　　bool trueResult = ((OrgSetForegrandWindow)(PROC)OrgFuncProc)(hWnd);
+　　　return trueResult;
+　　}
+　　//下面代码在WorkerProc函数或由其调用的函数中
+　　OrgFuncProc = GetProcAddress( GetModuleHandleA(user32),SetForegroundWindow);
+　　if (ReplaceIATEntryInOneMod(user32.dll,OrgFuncProc,(PROC)&OnQQWndShow,global_hCQQAppModule))
+　　{
+　　　//替换函数入口成功
+　　}
+
+　　其中global_hCQQAppModule是CQQApplication.dll在qq.exe中的模块句柄，可以调用GetModuleHandleA(CQQApplication.dll)来实现。不过现在存在一个问题
+
+　　用od加载qq.exe就会发现实际上CQQApplication.dll并不是在qq.exe启动后加载的，而是在登录以后。所以如果我们的dll插件在被加载之后立刻调用GetModuleHandleA的话就会返回NULL，那么之后的函数替换就不可能实现了。
+
+　　这里我用了个比较笨的办法，在替换SetForegroundWindow前编写循环不断的去掉用GetModuleHandleA，直到返回非null，而为了防止频率过快可以在循环中加上Sleep函数。(之前也尝试loadlibrary提前加载，但一直失败。还有中办法就是从前面的IsLogin来判断是否登录了QQ。但没有试验过。总之如果你有比较好的办法也希望告诉我)
+
+　　这部分的代码如下:
+
+　　bool WaitforLogon()
+　　{
+　　　while(!bIsDllUnload)
+　　　{
+　　　　global_hCQQAppModule = GetModuleHandleA(CQQApplication.dll);
+　　　　if (global_hCQQAppModule) return true;
+　　　　Sleep(300);
+　　　}
+　　　return false;
+　　}
+
+
+　　这就是为什么前面说过不能再dllmain里面作函数替换的工作了，否则会导致dllmain无法退出，从而会锁死整个qq
+3.获取Uin
+
+　　现在IQQCore *已经获得了，同时只要在OnQQWndShow中写入得到用户IP信息的代码，再使用FindWindow的方法把原先的广告去除，再创建个Edit或者Static来显示我们的数据即可。
+
+　　但之前还要得到Uin，也就是对方好友的QQ号。
+
+　　其实这里有个很笨的办法:QQ聊天对话框中有对方的号码的:比如“&heaven(27605046)(后面是个性签名)。的确可以用FindWindow+GetWindowText获取，然后得到括号里面的数据就好了，但是是否有更简单办法呢?有
+
+　　这里要感谢明日帝国(sunwangme)的教程，这里就是用他的方法了，具体原理还是大家去他blog看吧(google一下)
+
+　　大体的方法是:在QQ准备显示聊天对话框时，上面“&heaven(27605046)(后面是个性签名)这段文字会调用位于QQBaseClassInDll.dll中的CAllInOneStatusBar::SetUin(unsigned long);这个函数，其中参数就是我们要的QQ号了。而且可以保证CQQApplication.dll仅仅在要显示对话框前才会调用它。(再次感谢明日帝国)
+
+　　所以和上面一样，这次拦截CAllInOneStatusBar::SetUin(unsigned long);
+
+　　OrgSetUINProc =
+　　GetProcAddress(GetModuleHandleA(QQBaseClassInDll.dll),?SetUin@CAllInOneStatusBar@@QAEX_J@Z);
+　　if (ReplaceIATEntryInOneMod(QQBaseClassInDll.dll,OrgSetUINProc,(PROC)&Poke_GETUIDA,global_hCQQAllInOne)){
+　　}
+
+　　今后就会先调用我们的OrgSetUINProc，其中获取参数即可。
+
+　　不过要注意2个问题，第一这个QQBaseClassInDll.dll也不是一开始加载，更不是在登录后加载，而是在第一次要显示QQ聊天窗口才加载，不过比较幸运的是可以直接LoadLibrary把它先载过来。
+
+　　还有一个问题就是SetUin是thiscall规范的……哎，自己对thiscall还不是很了解，所以怕出错，那个OrgSetUINProc只能用naked调用规范了，同时要自己写汇编去完成细节的事:
+
+　　__declspec( naked ) int Poke_GETUIDA()
+　　{
+　　　_asm
+　　　{
+　　　　push ecx
+　　　　mov ecx,[esp+8]
+　　　　mov dwRecentUINA,ecx
+　　　　pop ecx
+　　　　jmp OrgSetUINProc
+　　　}
+　　}
+
+　　ok，这样一切都完成了
+
+　　3.编写获取IP信息的代码
+
+　　先整理下上面我们3个替换函数的执行顺序:
+
+　　PokeIsLogin:最好执行，且今后不断被调用
+
+　　Poke_GETUIDA:在将要显示QQ聊天窗口时执行
+
+　　OnQQWndShow:在Poke_GETUIDA之后运行。
+
+　　所以可以保证在OnQQWndShow中可以得到我们获取IP信息所有必要的参数了。
+
+　　那么就开始编写获取IP的代码:
+
+　　按照前面分析的，先用BasicCtr.GetFriendQQData得到当前好友的IQQData *:
+
+　　DWORD MainHandle;
+　　if (ptrBasicCtr_GetFriendQQData==NULL || global_ptrIQQCore==NULL) return 0;
+　　_asm
+　　{
+　　　mov edx,dwID
+　　　mov eax,global_ptrIQQCore
+　　　lea ecx,MainHandle
+　　　push ecx
+　　　push edx
+　　　push eax
+　　　call ptrBasicCtr_GetFriendQQData ; BasicCtr.GetFriendQQData
+　　　add esp,0xC
+　　}
+
+　　其中dwID是Uin，即用DWORD保存的QQ号码
+
+　　global_ptrIQQCore就是前面获得的IQQCore *
+
+　　ptrBasicCtr_GetFriendQQData 是GetFriendQQData的入口地址，用GetProcAddress得到
+
+　　最终MainHandle将保存IQQData *，如果运行失败，会返回null
+
+　　接下来就是通过QQUSER_DYNAMIC_DATA(暂时命名)函数来得到动态信息类的指针:
+
+　　char *szQQUSER_DYNAMIC_DATA = QQUSER_DYNAMIC_DATA;
+　　DWORD tmpInfo;
+　　DWORD returnVal;
+　　tmpInfo = 0xba863a1e;
+
+　　if (mainHandle == NULL)
+　　{
+　　　return NULL;
+　　}
+
+　　_asm
+　　{
+　　　mov eax,mainHandle
+　　　lea edx,returnVal
+　　　push edx
+　　　lea edx,tmpInfo
+　　　push edx
+　　　mov ecx,[eax]
+　　　push szQQUSER_DYNAMIC_DATA
+　　　push eax
+　　　call [ecx+54h]
+　　}
+
+　　结果将保存在returnVal中，同样，如果执行错误returnVal=NULL
+
+　　最后就是去获取IP地址了
+
+　　char *szwProcotol = wProcotol;
+　　char *szRecentip=dwRecentIP;
+　　char *szwRecentPort=wRecentPort;
+　　char *szdwC2CIP=dwC2CIP;
+　　char *szwC2CPort=wC2CPort;
+　　char *szdwIP=dwIP;
+　　char *szwPort=wPort;
+　　bool GetDestIPInfo(DWORD ptrClassHandle,DWORD *ptrDestIp,DWORD *ptrDestPort)
+　　{
+　　　if (ptrClassHandle==NULL || ptrDestIp==NULL || ptrDestPort==NULL) return false;
+　　　//Using Std Info Buffer
+　　　_asm
+　　　{
+　　　　pushad
+　　　　pushf
+　　　　mov eax,ptrClassHandle
+　　　　mov ecx,[eax]
+　　　　mov edx,ptrDestIp
+　　　　push edx
+　　　　push szRecentip
+　　　　push eax
+　　　　mov eax,[ecx+34h]
+　　　　call eax
+　　　　mov eax,ptrClassHandle
+　　　　mov ecx,[eax]
+　　　　mov edx,ptrDestPort
+　　　　push edx
+　　　　push szwRecentPort
+　　　　push eax
+　　　　mov eax,[ecx+30h]
+　　　　call eax
+　　　　popf
+　　　　popad
+　　　}
+　　　(*ptrDestPort) &= 0xFFFF;
+　　　if ((*ptrDestIp) != NULL && (*ptrDestPort) != NULL) return true;
+　　　_asm
+　　　{
+　　　　pushad
+　　　　pushf
+　　　　mov eax,ptrClassHandle
+　　　　mov ecx,[eax]
+　　　　mov edx,ptrDestIp
+　　　　push edx
+　　　　push szdwC2CIP
+　　　　push eax
+　　　　mov eax,[ecx+34h]
+　　　　call eax
+　　　　mov eax,ptrClassHandle
+　　　　mov ecx,[eax]
+　　　　mov edx,ptrDestPort
+　　　　push edx
+　　　　push szwC2CPort
+　　　　push eax
+　　　　mov eax,[ecx+30h]
+　　　　call eax
+　　　　popf
+　　　　popad
+　　　}
+　　　(*ptrDestPort) &= 0xFFFF;
+　　　if ((*ptrDestIp) != NULL && (*ptrDestPort) != NULL) return true;
+　　　_asm
+　　　{
+　　　　pushad
+　　　　pushf
+　　　　mov eax,ptrClassHandle
+　　　　mov ecx,[eax]
+　　　　mov edx,ptrDestIp
+　　　　push edx
+　　　　push szdwIP
+　　　　push eax
+　　　　mov eax,[ecx+34h]
+　　　　call eax
+　　　　mov eax,ptrClassHandle
+　　　　mov ecx,[eax]
+　　　　mov edx,ptrDestPort
+　　　　push edx
+　　　　push szwPort
+　　　　push eax
+　　　　mov eax,[ecx+30h]
+　　　　call eax
+　　　　popf
+　　　　popad
+　　　}
+　　　(*ptrDestPort) &= 0xFFFF;
+　　　return ((*ptrDestIp) != NULL && (*ptrDestPort) != NULL);
+　　}
+
+　　ptrClassHandle是前面得到的returnVal，IP地址的DWORD数据和WORD的port信息将保存在后2个参数指针的地址中。(代码借鉴了CoralQQ)
+
+　　到目前为止已大功告成!其他的细节代码就请各位发挥吧
+
+　　4.扩展
+
+　　上面并没有介绍如何得到对方QQ版本的信息，其实和获取IP一样，你在CQQApplication.dll中找到wProcotol的字符串参考，就会发现它和获取IP的代码很像，直接抄下来用就是了。
+
