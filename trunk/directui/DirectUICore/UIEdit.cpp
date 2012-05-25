@@ -22,6 +22,7 @@ public:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnKillFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT OnEditChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnEdit(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 protected:
     CEditUI* m_pOwner;
@@ -123,14 +124,12 @@ DWORD WINAPI CEditWnd::m_AutoCompleteProc(LPVOID lpParam)
 	for (iter = thisPtr->m_pOwner->m_pAutoCompleteSource.begin(); 
 		iter != thisPtr->m_pOwner->m_pAutoCompleteSource.end(); iter++) 
 	{
+		// FIXME: thisPtr->m_pOwner->m_sText is the preview text of Edit
 		if (-1 != (*iter).Find(thisPtr->m_pOwner->m_sText)) 
 		{
 			if (thisPtr->m_pOwner->m_pAutoCompleteMode == Append) 
 			{
 				thisPtr->m_pOwner->m_sText = *iter;
-				RECT rcClient;
-				::GetClientRect(thisPtr->m_hWnd, &rcClient);
-				::InvalidateRect(thisPtr->m_hWnd, &rcClient, FALSE);
 				break;
 			} 
 			else if (thisPtr->m_pOwner->m_pAutoCompleteMode == Suggest) 
@@ -164,20 +163,14 @@ LRESULT CEditWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ::InvalidateRect(m_hWnd, &rcClient, FALSE);
         }
 	}
-	else if (uMsg == WM_KEYDOWN) 
-	{
-		if (m_AutoCompleteThread) 
-		{
-			TerminateThread(m_AutoCompleteThread, NULL);
-			CloseHandle(m_AutoCompleteThread);
-			m_AutoCompleteThread = NULL;
-		}
-		m_AutoCompleteThread = CreateThread(NULL, NULL, m_AutoCompleteProc, this, NULL, NULL);
-	}
 	else if (uMsg == WM_KEYDOWN && TCHAR(wParam) == VK_RETURN) 
 	{
         m_pOwner->GetManager()->SendNotify(m_pOwner, _T("return"));
     }
+	else if (uMsg == WM_KEYDOWN) 
+	{
+		lRes = OnEdit(uMsg, wParam, lParam, bHandled);
+	}
     else if( uMsg == OCM__BASE + WM_CTLCOLOREDIT  || uMsg == OCM__BASE + WM_CTLCOLORSTATIC ) 
 	{
         if (m_pOwner->GetNativeEditBkColor() == 0xFFFFFFFF) return NULL;
@@ -216,8 +209,28 @@ LRESULT CEditWnd::OnEditChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
     ASSERT(pstr);
     if (pstr == NULL) return 0;
     ::GetWindowText(m_hWnd, pstr, cchLen);
-    m_pOwner->m_sText = pstr;
+	m_pOwner->m_sText = pstr;
     m_pOwner->GetManager()->SendNotify(m_pOwner, _T("textchanged"));
+
+    return 0;
+}
+
+LRESULT CEditWnd::OnEdit(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+{
+	if (m_pOwner->m_pAutoCompleteMode == None) 
+	{
+		return 0;
+	}
+
+	if (m_AutoCompleteThread) 
+	{
+		TerminateThread(m_AutoCompleteThread, NULL);
+		CloseHandle(m_AutoCompleteThread);
+		m_AutoCompleteThread = NULL;
+	}
+	m_AutoCompleteThread = CreateThread(NULL, NULL, m_AutoCompleteProc, this, NULL, NULL);
+
+    m_pOwner->GetManager()->SendNotify(m_pOwner, _T("edit"));
 
     return 0;
 }
@@ -418,7 +431,7 @@ TCHAR CEditUI::GetPasswordChar() const
 void CEditUI::SetAutoCompleteMode(AutoCompleteMode pAutoCompleteMode) 
 {
 	m_pAutoCompleteMode = pAutoCompleteMode;
-	Invalidate();
+	if (m_pAutoCompleteMode != None) Invalidate();
 }
 
 AutoCompleteMode CEditUI::GetAutoCompleteMode() const 
