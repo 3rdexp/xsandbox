@@ -79,6 +79,8 @@ static void m_GetUrl(const char* ParentUrl, char* Content)
 	}
 }
 
+static DWORD WINAPI m_Callback(LPVOID argv);
+
 class MyMemoryChunk 
 {
 public:
@@ -92,8 +94,44 @@ public:
 class MyCUrl 
 {
 public:
-    MyCUrl() :m_CUrl(NULL) { m_CUrl = curl_easy_init(); }
-    ~MyCUrl() { if (m_CUrl) curl_easy_cleanup(m_CUrl); m_CUrl = NULL; }
+    MyCUrl() :m_CUrl(NULL), m_MyMemoryChunk(NULL), m_fptr(NULL) 
+	{ 
+		char strCurDir[MAX_PATH] = {'\0'};
+		char strFilePath[MAX_PATH] = {'\0'};
+
+		curl_global_init(CURL_GLOBAL_ALL); 
+		
+		m_CUrl = curl_easy_init();
+
+		m_MyMemoryChunk = new MyMemoryChunk((char*)malloc(sizeof(char)), 0);
+
+		GetCurrentDirectory(MAX_PATH, strCurDir);
+		sprintf(strFilePath, "%s\\cache.htm", strCurDir);
+		m_fptr = fopen(strFilePath, "w");
+	}
+    ~MyCUrl() 
+	{ 
+		if (m_CUrl) 
+		{
+			curl_easy_cleanup(m_CUrl);
+			m_CUrl = NULL;
+
+			curl_global_cleanup();
+		}
+		if (m_MyMemoryChunk) 
+		{
+			free(m_MyMemoryChunk->strMemory);
+			m_MyMemoryChunk->strMemory = NULL;
+			m_MyMemoryChunk->nSize = 0;
+			delete m_MyMemoryChunk;
+			m_MyMemoryChunk = NULL;
+		}
+		if (m_fptr) 
+		{
+			fclose(m_fptr);
+			m_fptr = NULL;
+		}
+	}
 
 public:
     void TestCase1() 
@@ -104,41 +142,75 @@ public:
 
     void TestCase2() 
     {
-        MyMemoryChunk objMyMemoryChunk((char*)malloc(sizeof(char)), 0);
-
-        curl_easy_setopt(m_CUrl, CURLOPT_URL, "http://192.168.3.83");
+        curl_easy_setopt(m_CUrl, CURLOPT_URL, "http://192.168.3.83/phpinfo.php");
         curl_easy_setopt(m_CUrl, CURLOPT_WRITEFUNCTION, m_WriteMemoryCallback);
-        curl_easy_setopt(m_CUrl, CURLOPT_WRITEDATA, (void*)&objMyMemoryChunk);
+        curl_easy_setopt(m_CUrl, CURLOPT_WRITEDATA, this);
+        curl_easy_setopt(m_CUrl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+        curl_easy_perform(m_CUrl);
+    }
+
+	void TestCase3() 
+    {
+        curl_easy_setopt(m_CUrl, CURLOPT_URL, "http://192.168.3.83/phpinfo.php");
+        curl_easy_setopt(m_CUrl, CURLOPT_WRITEFUNCTION, m_WriteFileCallback);
+        curl_easy_setopt(m_CUrl, CURLOPT_WRITEDATA, this);
         curl_easy_setopt(m_CUrl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
         curl_easy_perform(m_CUrl);
     }
     
 private:
     CURL* m_CUrl;
+	MyMemoryChunk* m_MyMemoryChunk;
+	FILE* m_fptr;
 
 private:
     static size_t m_WriteMemoryCallback(void* Content, size_t nSize, size_t nMemb, void* Param) 
     {
-		MyMemoryChunk* objMyMemoryChunk = (MyMemoryChunk*)Param;
+		MyCUrl* objThisPtr = (MyCUrl*)Param;
         size_t nRealsize = nSize * nMemb;
  
-        objMyMemoryChunk->strMemory = (char*)realloc(
-			objMyMemoryChunk->strMemory, 
-            objMyMemoryChunk->nSize + nRealsize + 1);
+		objThisPtr->m_MyMemoryChunk->strMemory = (char*)realloc(
+			objThisPtr->m_MyMemoryChunk->strMemory, 
+            objThisPtr->m_MyMemoryChunk->nSize + nRealsize + 1);
         
-		if (objMyMemoryChunk->strMemory == NULL) return -1;
+		if (objThisPtr->m_MyMemoryChunk->strMemory == NULL) return -1;
         
-		memcpy(&(objMyMemoryChunk->strMemory[objMyMemoryChunk->nSize]), Content, nRealsize);
-        objMyMemoryChunk->nSize += nRealsize;
-        objMyMemoryChunk->strMemory[objMyMemoryChunk->nSize] = 0;
-		std::cout << objMyMemoryChunk->strMemory << std::endl;
+		memcpy(&(objThisPtr->m_MyMemoryChunk->strMemory[objThisPtr->m_MyMemoryChunk->nSize]), 
+			Content, 
+			nRealsize);
+        objThisPtr->m_MyMemoryChunk->nSize += nRealsize;
+        objThisPtr->m_MyMemoryChunk->strMemory[objThisPtr->m_MyMemoryChunk->nSize] = 0;
+		std::cout << objThisPtr->m_MyMemoryChunk->strMemory << std::endl;
 
 		// TODO: 查找页面中的HREF
+		
+		return nRealsize;
+    }
+
+	static size_t m_WriteFileCallback(void* Content, size_t nSize, size_t nMemb, void* Param) 
+    {
+		MyCUrl* objThisPtr = (MyCUrl*)Param;
+        size_t nRealsize = nSize * nMemb;
+ 
+		objThisPtr->m_MyMemoryChunk->strMemory = (char*)realloc(
+			objThisPtr->m_MyMemoryChunk->strMemory, 
+            objThisPtr->m_MyMemoryChunk->nSize + nRealsize + 1);
         
-		if (objMyMemoryChunk->strMemory) 
+		if (objThisPtr->m_MyMemoryChunk->strMemory == NULL) return -1;
+        
+		memcpy(&(objThisPtr->m_MyMemoryChunk->strMemory[objThisPtr->m_MyMemoryChunk->nSize]), 
+			Content, 
+			nRealsize);
+        objThisPtr->m_MyMemoryChunk->nSize += nRealsize;
+        objThisPtr->m_MyMemoryChunk->strMemory[objThisPtr->m_MyMemoryChunk->nSize] = 0;
+
+		if (objThisPtr->m_fptr) 
 		{
-			free(objMyMemoryChunk->strMemory);
-			objMyMemoryChunk->strMemory = NULL;
+			fwrite(objThisPtr->m_MyMemoryChunk->strMemory, 
+				strlen(objThisPtr->m_MyMemoryChunk->strMemory), 
+				sizeof(char), 
+				objThisPtr->m_fptr);
+			fflush(objThisPtr->m_fptr);
 		}
 		
 		return nRealsize;
@@ -153,12 +225,12 @@ int main()
 	char* strFileContent = NULL;
 	size_t nFileSize = 0;
 
-	/*
     MyCUrl objMyCUrl;
-    objMyCUrl.TestCase1();
-    objMyCUrl.TestCase2();
-	*/
+	//objMyCUrl.TestCase1();
+    //objMyCUrl.TestCase2();
+	objMyCUrl.TestCase3();
 
+	/*
 	m_GetCurDir(strCurDir);
 	sprintf(strFilePath, "%s\\test.htm", strCurDir);
 	nFileSize = m_GetFileSize(strFilePath);
@@ -169,6 +241,7 @@ int main()
 		fread((void*)strFileContent, sizeof(char), nFileSize * sizeof(char), m_fptr);
 	}
 	m_GetUrl("http://192.168.3.83", strFileContent);
+	*/
 
 #if WIN32
 	system("pause");
