@@ -1,0 +1,1 @@
+Program('mytestcase', 'MyTestCase.cpp', LIBS=['libmysqlclient'])
