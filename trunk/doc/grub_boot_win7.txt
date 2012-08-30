@@ -1,0 +1,56 @@
+[HOWTO] Error 13: Invalid or unsupported executable format
+
+1. Directly goto BIOS -> Advanced -> SATA Operation, changed AHCI to ATA;
+2. Boot with Windows 7 ISO, selected Repair Booting option to repair the BOOTMBR;
+3. Again goto BIOS -> Advanced -> SATA Operation, changed ATA to AHCI;
+Then Windows 7 booted happily.
+
+Manufacturer: Dell
+Model: XPS L502X
+OS: Windows 7 64 bit
+
+fdisk -l /dev/sda
+
+Disk /dev/sda: 640.1 GB, 640135028736 bytes
+255 heads, 63 sectors/track, 77825 cylinders, total 1250263728 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x07f2837e
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1              63      208844      104391    6  FAT16
+/dev/sda2   *      208845    30928844    15360000    7  HPFS/NTFS/exFAT
+/dev/sda3        30928845   235728844   102400000    7  HPFS/NTFS/exFAT
+/dev/sda4       235728896  1250260991   507266048    f  W95 Ext'd (LBA)
+/dev/sda5       235730944   850130943   307200000    7  HPFS/NTFS/exFAT
+/dev/sda6   *   850132992   852230143     1048576   83  Linux
+/dev/sda7       852232192   869009407     8388608   82  Linux swap / Solaris
+/dev/sda8       869011456  1250260991   190624768   83  Linux
+
+my /boot/grub/grug.conf
+default 0
+timeout 10
+
+title Gentoo Linux 3.5.2
+root (hd0,5)
+kernel /boot/kernel-3.5.2 root=/dev/sda8
+
+title Windows 7
+rootnoverify (hd0,1)
+makeactive
+chainloader +1
+
+part of my /etc/fstab
+
+/dev/sda6		/boot		ext2		noauto,noatime	1 2
+/dev/sda8		/		    ext4		noatime		    0 1
+/dev/sda7		none		swap		sw		        0 0
+
+uname -a
+
+Linux xzhai 3.5.2-gentoo #1 SMP Thu Aug 30 09:02:05 CST 2012 i686 Intel(R) Core(TM) i7-2630QM CPU @ 2.00GHz GenuineIntel GNU/Linux
+
+fix log
+
+It is the first time to fix the grub Error 13 issue, so I goooooooogle with the 'Gentoo grub Windows 7 Invalid or unsupported executable format' keyword, there are a lot of [SOLVED] forum threads simply due to the typo of grub.conf, but I double checked my fdisk -l, grub.conf, /etc/fstab, then I tried to emerge update grub 2.x from grub:0, it still throw such error when booting Windows 7.
